@@ -57,7 +57,7 @@ void setup() {
 
     // Setup the motor for use
     motor.setState(DISABLED, true);
-    //motor.setMicrostepping(16);
+    motor.setMicrostepping(16);
     //motor.setDesiredAngle(100);
 
     // Only run if the OLED is enabled
@@ -182,7 +182,7 @@ void setup() {
                     // Reboot the chip
                     NVIC_SystemReset();
                 }
- 
+
             #else
 
                 // Just jump to calibrating the motor and reset the system afterward
@@ -212,16 +212,16 @@ void setup() {
             else {
                 writeOLEDString(0, 48, F("unsuccessfully"), true);
             }
-            
+
             // Let the user read the message
             delay(1000);
 
             // Clear the display
             clearOLED();
-            
+
             // Write out the first data to the screen (makes sure that the first write isn't interrupted)
             displayMotorData();
-        #else 
+        #else
             // Nothing special, just try to load the flash data
             loadParameters();
         #endif
@@ -282,14 +282,14 @@ void overclock(uint32_t PLLMultiplier) {
 
     // Wait for the PLL to be configured
     while(!(RCC_CR_PLLRDY & RCC -> CR))
-        ; // 
+        ; //
 
     // Use the PLL as the system clock
     RCC -> CFGR |= RCC_SYSCLKSOURCE_PLLCLK;
 
     #ifdef CHECK_MCO_OUTPUT
         HAL_RCC_MCOConfig(RCC_MCO, RCC_MCO1SOURCE_HSI, RCC_MCODIV_1);
-    #endif	
+    #endif
 }
 
 

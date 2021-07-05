@@ -14,7 +14,7 @@
 #define ENABLE_LED // red LED labeled as an 'error' in the schema
 #ifdef ENABLE_LED
     //#define ENABLE_BLINK
-    //#define CHECK_STEPPING_RATE
+    #define CHECK_STEPPING_RATE
 
     #if defined(ENABLE_BLINK) && defined(CHECK_STEPPING_RATE)
         #error Only one of #define is possible at a time in this section
@@ -105,7 +105,7 @@
 // PID settings
 // ! At this time this feature is still under development
 // ! Do not enable it, it doesn't work
-//#define ENABLE_PID
+#define ENABLE_PID
 #ifdef ENABLE_PID
 
     // Default P, I, and D terms
