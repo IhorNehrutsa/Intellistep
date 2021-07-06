@@ -30,6 +30,7 @@ MovingAverage <float> encoderTempAvg;
 // The startup angle and rev offsets
 double startupAngleOffset = 0;
 double startupAngleRevOffset = 0;
+double encoderStepOffset = 0;
 
 // A map of the known registers
 uint16_t regMap[MAX_NUM_REG];              //!< Register map */
@@ -199,7 +200,7 @@ void initEncoder() {
     }
 
     // Set the offsets
-    startupAngleOffset = getAngle();
+    //startupAngleOffset = getAngle();
     startupAngleRevOffset = getAbsoluteRev();
 
     // Set the correct starting values for the estimation if using estimation
@@ -536,7 +537,7 @@ double getAngle(bool average) {
     rawData = (rawData & (DELETE_BIT_15));
 
     // Add the averaged value (equation from TLE5012 library)
-    double angle = ((360.0 / POW_2_15) * ((double) rawData)) - startupAngleOffset;
+    double angle = ((360.0 / POW_2_15) * ((double) rawData)) - (startupAngleOffset + encoderStepOffset);
     encoderAngleAvg.add(angle);
 
     // All important functions are done, re-enable interrupts
@@ -554,7 +555,7 @@ double getAngle(bool average) {
 // For average velocity calculations instead of hardware readings from the TLE5012
 #ifdef ENCODER_SPEED_ESTIMATION
 
-// Reads the speed of the encoder (for later)
+// Reads the speed of the encoder in deg/s
 // ! Needs fixed yet, readings are off
 double getEncoderSpeed() {
 
@@ -586,7 +587,7 @@ double getEncoderSpeed() {
 
 #else // ENCODER_ESTIMATION
 
-// Reads the speed of the encoder (for later)
+// Reads the speed of the encoder in deg/s (for later)
 double getEncoderSpeed() {
 
     // This function cannot be interrupted
@@ -788,6 +789,12 @@ double getAbsoluteAngle() {
 
     // Return the average
     return encoderAbsoluteAngleAvg.get();
+}
+
+
+// Sets the encoder's step offset (used for calibration)
+void setEncoderStepOffset(double offset) {
+    encoderStepOffset = offset;
 }
 
 

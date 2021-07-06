@@ -29,7 +29,7 @@ MENU_DEPTH lastMenuDepth = MOTOR_DATA;
 void showBootscreen() {
     writeOLEDString(0, 0,               F("Intellistep"), false);
     writeOLEDString(0, LINE_HEIGHT * 2, F("Version: "), false);
-    writeOLEDString(0, LINE_HEIGHT * 3, F(VERSION), true);
+    writeOLEDString(0, LINE_HEIGHT * 3, VERSION_STRING, true);
 }
 
 
@@ -50,7 +50,7 @@ void updateDisplay() {
             clearOLED();
             writeOLEDString(0,  0, "->", false);
             writeOLEDString(25, 0,               &submenuItems[(submenu)     % submenuCount][0], false);
-            writeOLEDString(25, LINE_HEIGHT,     &submenuItems[(submenu + 1) % submenuCount][0], false);
+            writeOLEDString(25, LINE_HEIGHT * 1, &submenuItems[(submenu + 1) % submenuCount][0], false);
             writeOLEDString(25, LINE_HEIGHT * 2, &submenuItems[(submenu + 2) % submenuCount][0], false);
             writeOLEDString(25, LINE_HEIGHT * 3, &submenuItems[(submenu + 3) % submenuCount][0], true);
             break;
@@ -61,9 +61,9 @@ void updateDisplay() {
                 case CALIBRATION:
                     // In the first menu, the calibration one. No need to do anything here, besides maybe displaying an progress bar or PID values (later?)
                     clearOLED();
-                    writeOLEDString(0, 0,               "Are you sure?", false);
-                    writeOLEDString(0, LINE_HEIGHT,     "Press select", false);
-                    writeOLEDString(0, LINE_HEIGHT * 2, "to confirm", true);
+                    writeOLEDString(0, 0,               F("Are you sure?"), false);
+                    writeOLEDString(0, LINE_HEIGHT * 1, F("Press select"), false);
+                    writeOLEDString(0, LINE_HEIGHT * 2, F("to confirm"), true);
                     break;
 
                 case CURRENT:
@@ -78,7 +78,7 @@ void updateDisplay() {
                     }
 
                     // Write the pointer
-                    writeOLEDString(0, 0, "->", false);
+                    writeOLEDString(0, 0, F("->"), false);
 
                     // Write each of the strings
                     for (uint8_t stringIndex = 0; stringIndex <= 3; stringIndex++) {
@@ -102,7 +102,7 @@ void updateDisplay() {
                 case MICROSTEP:
                     // In the microstep menu, this is also dynamically generated. Get the current stepping of the motor, then display all of the values around it
                     clearOLED();
-                    writeOLEDString(0, 0, "->", false);
+                    writeOLEDString(0, 0, F("->"), false);
 
                     // Loop the currentCursor index back if it's out of range
                     if (currentCursorIndex > log2(MAX_MICROSTEP_DIVISOR)) {
@@ -139,17 +139,17 @@ void updateDisplay() {
                     clearOLED();
 
                     // Title
-                    writeOLEDString(0, 0, "Enable logic:", false);
+                    writeOLEDString(0, 0, F("Enable logic:"), false);
 
                     // Write the string to the screen
                     if (currentCursorIndex % 2 == 0) {
 
                         // The index is even, the logic is inverted
-                        writeOLEDString(0, (3 * LINE_HEIGHT / 2), "Inverted", true);
+                        writeOLEDString(0, (3 * LINE_HEIGHT / 2), F("Inverted"), true);
                     }
                     else {
                         // Index is odd, the logic is normal
-                        writeOLEDString(0, (3 * LINE_HEIGHT / 2), "Normal", true);
+                        writeOLEDString(0, (3 * LINE_HEIGHT / 2), F("Normal"), true);
                     }
                     break;
 
@@ -158,17 +158,17 @@ void updateDisplay() {
                     clearOLED();
 
                     // Title
-                    writeOLEDString(0, 0, "Dir logic:", false);
+                    writeOLEDString(0, 0, F("Dir logic:"), false);
 
                     // Write the string to the screen
                     if (currentCursorIndex % 2 == 0) {
 
                         // The index is even, the logic is inverted
-                        writeOLEDString(0, (3 * LINE_HEIGHT / 2), "Inverted", true);
+                        writeOLEDString(0, (3 * LINE_HEIGHT / 2), F("Inverted"), true);
                     }
                     else {
                         // Index is odd, the logic is normal
-                        writeOLEDString(0, (3 * LINE_HEIGHT / 2), "Normal", true);
+                        writeOLEDString(0, (3 * LINE_HEIGHT / 2), F("Normal"), true);
                     }
                     break;
 
@@ -177,7 +177,7 @@ void updateDisplay() {
                     clearOLED();
 
                     // Write cursor to line index based on cursor mod
-                    writeOLEDString(0, (currentCursorIndex % 3) * LINE_HEIGHT, "->", false);
+                    writeOLEDString(0, (currentCursorIndex % 3) * LINE_HEIGHT, F("->"), false);
 
                     // Write out the options
                     writeOLEDString(25, 0,               F("Save"), false);
@@ -277,9 +277,7 @@ void selectMenuItem() {
                 // Nothing to see here, just moving into the calibration
                 motor.calibrate();
 
-                // Exit the menu
-                menuDepth = MENU_RETURN_LEVEL;
-                break;
+                // Board is restarted, so no need to do anything here
 
             case CURRENT:
                 // Motor mAs. Need to get the current motor mAs, then convert that to a cursor value

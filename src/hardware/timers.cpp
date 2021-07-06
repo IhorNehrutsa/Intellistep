@@ -68,7 +68,9 @@ void setupMotorTimers() {
     #endif
 
     // Attach the interupt to the step pin (subpriority is set in platformio config file)
-    attachInterrupt(digitalPinToInterrupt(STEP_PIN), stepMotor, RISING);
+    // A normal step pin triggers on the rising edge. However, as explained here: https://github.com/CAP1Sup/Intellistep/pull/50#discussion_r663051004
+    // the optocoupler inverts the signal. Therefore, the falling edge is the correct value.
+    attachInterrupt(digitalPinToInterrupt(STEP_PIN), stepMotor, FALLING); // input is pull-upped to VDD
 
     // Setup the timer for steps
     correctionTimer -> pause();
@@ -206,10 +208,10 @@ void correctMotor() {
         motor.setState(ENABLED);
 
         // Get the angular deviation
-        float angularDeviation = motor.getAngleError();
+        int32_t stepDeviation = motor.getStepError();
 
         // Check to make sure that the motor is in range (it hasn't skipped steps)
-        if (abs(angularDeviation) > motor.getMicrostepAngle()) {
+        if (abs(stepDeviation) > 1) {
 
 
             // Run PID stepping if enabled
@@ -231,14 +233,20 @@ void correctMotor() {
             #else // ! ENABLE_PID
                 // Just "dumb" correction based on direction
                 // Set the stepper to move in the correct direction
-                if (angularDeviation > 0) {
+                if (/*motor.getStepPhase() != */ true) {
+                    if (stepDeviation > 0) {
 
-                    // Motor is at a position larger than the desired one
-                    motor.step(CLOCKWISE, false, false);
-                }
-                else {
-                    // Motor is at a position smaller than the desired one
-                    motor.step(COUNTER_CLOCKWISE, false, false);
+                        // Motor is at a position larger than the desired one
+                        // Use the current angle to find the current step, then subtract 1
+                        motor.step(CLOCKWISE, false, false);
+                        //motor.driveCoils(round(getAbsoluteAngle() / (motor.getMicrostepAngle()) - (motor.getMicrostepping())));
+                    }
+                    else {
+                        // Motor is at a position smaller than the desired one
+                        // Use the current angle to find the current step, then add 1
+                        motor.step(COUNTER_CLOCKWISE, false, false);
+                        //motor.driveCoils(round(getAbsoluteAngle() / (motor.getMicrostepAngle()) + (motor.getMicrostepping())));
+                    }
                 }
             #endif // ! ENABLE_PID
 
@@ -247,7 +255,7 @@ void correctMotor() {
             #ifdef ENABLE_STALLFAULT
 
                 // Check to see if the out of position faults have exceeded the maximum amounts
-                if (outOfPosCount > (STEP_FAULT_TIME * ((STEP_UPDATE_FREQ * motor.getMicrostepping()) - 1)) || abs(angularDeviation) > STEP_FAULT_ANGLE) {
+                if (outOfPosCount > (STEP_FAULT_TIME * ((STEP_UPDATE_FREQ * motor.getMicrostepping()) - 1)) || abs(stepDeviation) > STEP_FAULT_STEP_COUNT) {
 
                     // Setup the StallFault pin if it isn't already
                     // We need to wait for a fault because otherwise the programmer will be unable to program the board

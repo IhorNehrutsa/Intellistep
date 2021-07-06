@@ -23,12 +23,6 @@ typedef enum {
     COAST
 } COIL_STATE;
 
-// Enumeration for coil letter
-typedef enum {
-    A,
-    B
-} COIL;
-
 // Enumeration for stepping direction
 typedef enum {
     PIN,
@@ -58,10 +52,19 @@ class StepperMotor {
         StepperMotor();
 
         // Returns the current RPM of the motor to two decimal places
-        float getMotorRPM() const;
+        float getMotorRPM();
 
-        // Returns the deviation of the motor from the set position
-        float getAngleError() const;
+        // Returns the angular deviation of the motor from the set position
+        float getAngleError();
+
+        // Returns the step deviation of the motor from the set position
+        int32_t getStepError();
+
+        // Returns the current phase setting of the motor
+        int32_t getStepPhase();
+
+        // Returns the desired step of the motor
+        int32_t getDesiredStep();
 
         // Dynamic current
         #ifdef ENABLE_DYNAMIC_CURRENT
@@ -116,6 +119,9 @@ class StepperMotor {
         // Used to speed up processing
         float getMicrostepAngle() const;
 
+        // Get the microsteps per rotation of the motor
+        int32_t getMicrostepsPerRotation() const;
+
         // Set if the motor should be reversed
         void setReversed(bool reversed);
 
@@ -137,8 +143,8 @@ class StepperMotor {
         // Test
         void simpleStep();
 
-        // Calculates the coil values for the motor and updates the set angle. 
-        void step(STEP_DIR dir = PIN, bool useMultiplier = true, bool updateDesiredAngle = true);
+        // Calculates the coil values for the motor and updates the set angle.
+        void step(STEP_DIR dir = PIN, bool useMultiplier = true, bool updateDesiredPos = true);
 
         // Sets the coils to hold the motor at the desired step number
         void driveCoils(int32_t steps);
@@ -154,7 +160,7 @@ class StepperMotor {
 
         // Calculates the correct PWM setting based on an input current
         uint32_t currentToPWM(uint16_t current) const;
-        
+
         // Sets the current state of the motor
         void setState(MOTOR_STATE newState, bool clearErrors = false);
 
@@ -174,9 +180,12 @@ class StepperMotor {
 
         // Function for getting the sign of the number (returns -1 if number is less than 0, 1 if 0 or above)
         int32_t getSign(float num);
-        
+
         // Keeps the desired angle of the motor
         float desiredAngle = 0;
+
+        // Keeps the desired step of the motor
+        int32_t desiredStep = 0;
 
         // Keeps the current angle of the motor
         float currentAngle = 0;
@@ -192,7 +201,7 @@ class StepperMotor {
             uint16_t dynamicMaxCurrent = DYNAMIC_MAX_CURRENT;
         #else
             // RMS Current (in mA)
-            uint16_t rmsCurrent = STATIC_RMS_CURRENT;
+            uint16_t rmsCurrent = (uint16_t)STATIC_RMS_CURRENT;
             // Peak Current (in mA)
             uint16_t peakCurrent = (rmsCurrent * 1.414);
         #endif
@@ -206,22 +215,26 @@ class StepperMotor {
         // Microstep angle (full step / microstepping divisor)
         float microstepAngle = 1.8;
 
+        // Microstep count in a full rotation
+        int32_t microstepsPerRotation = (360.0 / getFullStepAngle());
+
         // If the motor is enabled or not (saves time so that the enable and disable pins are only set once)
         MOTOR_STATE state = DISABLED;
 
         // reversed is a multiplier for steps and angles
         // 1 - If the motor direction is normal
         // -1 - If the motor direction is inverted
-        uint8_t reversed = 1;
+        int8_t reversed = 1;
 
         // If the motor enable is inverted
         bool enableInverted = false;
 
         // Microstep multiplier (used to move a custom number of microsteps per step pulse)
-        int microstepMultiplier = MICROSTEP_MULTIPLIER;
+        uint32_t microstepMultiplier = MICROSTEP_MULTIPLIER;
 
         // Analog info structures for PWM current pins
-        analogInfo PWMCurrentPinInfo[2];
+        analogInfo PWMCurrentPinInfoA;
+        analogInfo PWMCurrentPinInfoB;
 
         // Last coil states (used to save time by not setting the pins unless necessary)
         COIL_STATE previousCoilStateA = BRAKE;

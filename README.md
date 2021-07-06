@@ -50,6 +50,7 @@ GCode Table
 
 - [BTT](https://github.com/bigtreetech) - [Original code](https://github.com/bigtreetech/BIGTREETECH-Stepper-Motor-Driver)
 - [CAP1Sup](https://github.com/CAP1Sup) - Main rewrite of code
+- [IhorNehrutsa](https://github.com/IhorNehrutsa) - Large performance gains, general code work
 - [TazerReloaded](https://github.com/TazerReloaded) - Encoder protocol and communication, much faster snprintf string printing
 - [Misfittech](https://github.com/Misfittech) - The [Smart Stepper project](https://github.com/Misfittech/nano_stepper). This was a large help when writing the correct stepping code.
 - [Matt Fryer](https://github.com/MattFryer) - [Smoothed](https://github.com/MattFryer/Smoothed) library. This was a huge help when smoothing out the OLED values to make them more readable and accurate

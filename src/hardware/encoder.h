@@ -283,7 +283,8 @@ double getEncoderAccel();
 double getEncoderTemp();
 double getAbsoluteRev();
 double getAbsoluteAngle();
-void setEncoderOffset(uint16_t offset);
+void setEncoderStepOffset(double offset);
+void zeroEncoder();
 
 #endif
 
