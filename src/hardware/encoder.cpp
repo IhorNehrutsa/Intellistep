@@ -162,7 +162,6 @@ Encoder::Encoder() {
     encoderSpeedAvg.begin(RPM_AVG_READINGS);
     encoderAccelAvg.begin(ACCEL_AVG_READINGS);
     encoderAngleAvg.begin(ANGLE_AVG_READINGS);
-    encoderAbsoluteAngleAvg.begin(ANGLE_AVG_READINGS);
     encoderTempAvg.begin(TEMP_AVG_READINGS);
 
     // Populate the average angle reading table
@@ -729,11 +728,8 @@ double Encoder::getRev() {
 // Gets the absolute angle of the motor
 double Encoder::getAbsoluteAngle() {
 
-    // Perform actual averaging
-    encoderAbsoluteAngleAvg.add((getRev() * 360) + getAngleNow());
-
     // Return the average
-    return encoderAbsoluteAngleAvg.get();
+    return getRev() * 360 + getAngleAvg();
 }
 
 

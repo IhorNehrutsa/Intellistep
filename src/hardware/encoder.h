@@ -307,7 +307,6 @@ class Encoder {
         MovingAverage <float> encoderSpeedAvg;
         MovingAverage <float> encoderAccelAvg;
         MovingAverage <float> encoderAngleAvg;
-        MovingAverage <float> encoderAbsoluteAngleAvg;
         MovingAverage <float> encoderTempAvg;
 
         // The startup angle and rev offsets
