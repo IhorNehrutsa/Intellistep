@@ -16,9 +16,9 @@
 #define ENABLE_LED // red LED labeled as an 'error' in the schema
 #ifdef ENABLE_LED
     //#define ENABLE_BLINK
-    //#define CHECK_STEPPING_RATE
+    #define CHECK_STEPPING_RATE
     //#define CHECK_CORRECT_MOTOR_RATE
-    #define CHECK_ENCODER_SPEED
+    //#define CHECK_ENCODER_SPEED
 
     #if defined(ENABLE_BLINK) && defined(CHECK_STEPPING_RATE) && defined(CHECK_CORRECT_MOTOR_RATE) && defined(CHECK_ENCODER_SPEED)
         #error Only one of #define is possible at a time in this section
@@ -191,7 +191,7 @@
 // This can be set to 72 and 128 with SYSCLK_SRC_HSE_8 (external oscillator)
 // Can be set to 72 with SYSCLK_SRC_HSE_16 (external oscillator)
 // Can be set to 64 with SYSCLK_SRC_HSI (internal oscillator)
-#define SYSCLK_FREQ 128
+#define SYSCLK_FREQ 72
 #define SYSCLK_SRC_HSE_8
 
 // The compare format and maximum value for PWM (lower values = higher max freq)

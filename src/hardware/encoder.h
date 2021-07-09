@@ -277,10 +277,18 @@ class Encoder {
         uint8_t calcCRC(uint8_t *data, uint8_t length);
         void resetSafety();
 
+        // Fast functions
+        uint16_t getRawStepsNow();
+        uint16_t getRawStepsAvg();
+
         // High level encoder functions
+        // Reads the raw momentary value from the angle of the encoder (unadjusted)
         double getRawAngleNow();
+        // Reads the raw average value from the angle of the encoder (unadjusted)
         double getRawAngleAvg();
+        // Reads the momentary value for the angle of the encoder (ranges from 0-360)
         double getAngleNow();
+        // Reads the average value for the angle of the encoder (ranges from 0-360)
         double getAngleAvg();
         double getSpeed();
         double getAccel();
@@ -306,7 +314,7 @@ class Encoder {
         // Moving average instances
         MovingAverage <float> encoderSpeedAvg;
         MovingAverage <float> encoderAccelAvg;
-        MovingAverage <float> encoderAngleAvg;
+        MovingAverage <uint16_t> encoderStepsAvg;
         MovingAverage <float> encoderTempAvg;
 
         // The startup angle and rev offsets
