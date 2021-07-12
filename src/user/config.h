@@ -296,6 +296,9 @@
 #define CAN_IN_PIN   PA_11
 #define CAN_OUT_PIN  PA_12
 
+// UART pins
+#define USART1_TX PA9
+#define USART1_RX PA10
 
 // --------------  Internal defines  --------------
 // Under the hood motor setup
@@ -305,7 +308,7 @@
 
 // Use a integer version of the log of SINE_MAX
 // Used to speed up division much faster
-#define SINE_POWER (uint16_t)log2(SINE_MAX)
+#define SINE_POWER ((uint16_t)log2(SINE_MAX))
 
 // Bitwise memory modification - ARM bitband
 #define BITBAND(addr, bitnum) ((addr & 0xF0000000)+0x2000000+((addr &0xFFFFF)<<5)+(bitnum<<2))

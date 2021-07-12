@@ -13,6 +13,8 @@ String serialBuffer;
 
 // Initializes serial bus
 void initSerial() {
+    Serial.setTx(USART1_TX);
+    Serial.setRx(USART1_RX);
     Serial.begin(SERIAL_BAUD);
 }
 

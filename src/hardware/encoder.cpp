@@ -616,7 +616,10 @@ int16_t Encoder::getRawSpeed() {
     // Read the encoder
     while (readRegister(ENCODER_SPEED_REG, rawData) != NO_ERROR);
 
+
     if (rawData & IS_BIT_15) {
+        Serial.println("rawData1:" + String(rawData));
+
         // Get raw speed reading
         rawData &= DELETE_BIT_15;
 
@@ -627,9 +630,14 @@ int16_t Encoder::getRawSpeed() {
 
         lastSpeed = rawData;
 
+        //lastSpeed &= 0xFFF0;
+
+        Serial.println("rawData2:" + String(lastSpeed));
+
         return (int16_t)rawData;
     }
     else {
+        Serial.println("rawData0:" + String(rawData));
         return lastSpeed;
     }
 
@@ -643,8 +651,6 @@ double Encoder::getSpeed() {
 
     // Read the encoder, modifying the array
     readMultipleRegisters(ENCODER_SPEED_REG, rawData, sizeof(rawData) / sizeof(uint16_t));
-
-    Serial.println("rawData[5]:" + String(rawData[5]));
 
 	// Get raw speed reading
 	int16_t rawSpeed = rawData[0];
