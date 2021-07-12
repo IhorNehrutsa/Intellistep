@@ -40,13 +40,13 @@
 #endif
 
 // Averages (number of readings in average)
-#define RPM_AVG_READINGS     (uint16_t)10
+#define RPM_AVG_READINGS     (uint16_t)200
 #define ACCEL_AVG_READINGS   (uint16_t)10
 #define ANGLE_AVG_READINGS   (uint16_t)15
 #define TEMP_AVG_READINGS    (uint16_t)200
 
 // If encoder estimation should be used
-//#define ENCODER_SPEED_ESTIMATION
+#define ENCODER_SPEED_ESTIMATION
 #ifdef ENCODER_SPEED_ESTIMATION
     #define SPD_EST_MIN_INTERVAL 500 // The minimum sampling interval (us). Increase to get more steady readings at the cost of latency
 #endif

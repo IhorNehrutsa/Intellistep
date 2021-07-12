@@ -618,7 +618,7 @@ int16_t Encoder::getRawSpeed() {
 
 
     if (rawData & IS_BIT_15) {
-        Serial.println("rawData1:" + String(rawData));
+        //Serial.println("rawData1:" + String(rawData));
 
         // Get raw speed reading
         rawData &= DELETE_BIT_15;
@@ -630,11 +630,12 @@ int16_t Encoder::getRawSpeed() {
 
         lastSpeed = rawData;
 
-        //lastSpeed &= 0xFFF0;
+        if (abs(lastSpeed) <= 2)
+            lastSpeed = 0;
 
-        Serial.println("rawData2:" + String(lastSpeed));
+        //Serial.println("lastSpeed:" + String(lastSpeed));
 
-        return (int16_t)rawData;
+        return lastSpeed;
     }
     else {
         Serial.println("rawData0:" + String(rawData));
@@ -653,7 +654,7 @@ double Encoder::getSpeed() {
     readMultipleRegisters(ENCODER_SPEED_REG, rawData, sizeof(rawData) / sizeof(uint16_t));
 
 	// Get raw speed reading
-	int16_t rawSpeed = rawData[0];
+	uint16_t rawSpeed = rawData[0];
 	rawSpeed = rawSpeed & DELETE_BIT_15;
 
 	// If bit 14 is set, the value is negative
@@ -680,12 +681,21 @@ double Encoder::getSpeed() {
             firMDVal = 170.6;
             break;
         default:
-            firMDVal = 0.0;
+            firMDVal = 0.0; // ??? zero division
             break;
     }
 
+        lastSpeed = rawSpeed;
+/*
+        if (lastSpeed >= 0)
+            lastSpeed &= ~7;
+        else
+            lastSpeed |= 7;
+*/
+        Serial.println("laSpeed:" + String(lastSpeed) + " " + String(firMD));
+
     // Calculate and average angle speed in degree per second
-	encoderSpeedAvg.add(((360.0 / POW_2_15) * rawSpeed) / (2.0 * firMDVal * 0.000001));
+	encoderSpeedAvg.add((1000000.0 * (360.0 / POW_2_15) * (int16_t)lastSpeed) / (2.0 * 42.7));
 
     // Return the result
     return encoderSpeedAvg.get();

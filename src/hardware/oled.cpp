@@ -234,8 +234,8 @@ void displayMotorData() {
 */
 
 
-    snprintf(outBuffer, OB_SIZE, "RSP: %10d", motor.encoder.getRawSpeed());
-    writeOLEDString(0, LINE_HEIGHT * 1, outBuffer, true);
+//    snprintf(outBuffer, OB_SIZE, "RSP: %10d", motor.encoder.getRawSpeed());
+//    writeOLEDString(0, LINE_HEIGHT * 1, outBuffer, true);
 
     // Temp of the encoder (close to the motor temp)
     snprintf(outBuffer, OB_SIZE, "Temp: %7.1f C", motor.encoder.getTempNow());
