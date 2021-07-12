@@ -53,6 +53,8 @@ class StepperMotor {
         // Initialize the motor
         StepperMotor();
 
+        float getRPM();
+
         // Returns the current RPM of the motor to two decimal places
         float getMotorRPM();
 
@@ -198,6 +200,11 @@ class StepperMotor {
 
         // Keeps the current steps of the motor
         int32_t currentStep = 0;
+
+        bool velocityFlag = false;
+        float velocity = 0.0;
+        float lastAngle = 0.0;
+        int32_t lastStepSampleTime = 0; // micros()
 
         // Motor characteristics
         #ifdef ENABLE_DYNAMIC_CURRENT

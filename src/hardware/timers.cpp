@@ -7,11 +7,13 @@
 // Timer uses:
 // - TIM1 - Used to time correction calculations
 // - TIM2 - Used to time PID steps
-// - TIM3 - Used to generate PWM signal for motor
+//// - TIM3 - Used to generate PWM signal for motor
 // - TIM4 - Used to directly step the motor
 
+#ifdef ENABLE_CORRECTION_TIMER
 // Create a new timer instance
 HardwareTimer *correctionTimer = new HardwareTimer(TIM1);
+#endif
 
 // If step correction is enabled (helps to prevent enabling the timer when it is already enabled)
 bool stepCorrection = false;
@@ -89,16 +91,18 @@ void setupMotorTimers() {
     // the optocoupler inverts the signal. Therefore, the falling edge is the correct value.
     attachInterrupt(STEP_PIN, stepMotor, FALLING); // input is pull-upped to VDD
 
-    // Setup the timer for steps
-    correctionTimer -> pause();
-    correctionTimer -> setInterruptPriority(7, 1);
-    correctionTimer -> setMode(1, TIMER_OUTPUT_COMPARE); // Disables the output, since we only need the timed interrupt
-    correctionTimer -> setOverflow(round(STEP_UPDATE_FREQ * motor.getMicrostepping()), HERTZ_FORMAT);
-    #ifndef CHECK_STEPPING_RATE
-        correctionTimer -> attachInterrupt(correctMotor);
+    #ifdef ENABLE_CORRECTION_TIMER
+        // Setup the timer for steps
+        correctionTimer -> pause();
+        correctionTimer -> setInterruptPriority(7, 1);
+        correctionTimer -> setMode(1, TIMER_OUTPUT_COMPARE); // Disables the output, since we only need the timed interrupt
+        correctionTimer -> setOverflow(round(STEP_UPDATE_FREQ * motor.getMicrostepping()), HERTZ_FORMAT);
+        #ifndef CHECK_STEPPING_RATE
+            correctionTimer -> attachInterrupt(correctMotor);
+        #endif
+        correctionTimer -> refresh();
+        correctionTimer -> resume();
     #endif
-    correctionTimer -> refresh();
-    correctionTimer -> resume();
 
     // Setup the PID timer if it is enabled
     #ifdef ENABLE_PID
@@ -131,7 +135,9 @@ void disableMotorTimers() {
     detachInterrupt(STEP_PIN);
 
     // Disable the correctional timer
-    correctionTimer -> pause();
+    #ifdef ENABLE_CORRECTION_TIMER
+        correctionTimer -> pause();
+    #endif
 
     // Disable the PID move timer if PID is enabled
     #ifdef ENABLE_PID
@@ -152,7 +158,9 @@ void enableMotorTimers() {
     attachInterrupt(STEP_PIN, stepMotor, FALLING); // input is pull-upped to VDD
 
     // Enable the correctional timer
-    correctionTimer -> resume();
+    #ifdef ENABLE_CORRECTION_TIMER
+        correctionTimer -> resume();
+    #endif
 
     // Enable the PID move timer if PID is enabled
     #ifdef ENABLE_PID
@@ -197,7 +205,9 @@ void enableStepCorrection() {
 
     // Enable the timer if it isn't already, then set the variable
     if (!stepCorrection) {
-        correctionTimer -> resume();
+        #ifdef ENABLE_CORRECTION_TIMER
+            correctionTimer -> resume();
+        #endif
         stepCorrection = true;
     }
 }
@@ -208,7 +218,9 @@ void disableStepCorrection() {
 
     // Disable the timer if it isn't already, then set the variable
     if (stepCorrection) {
-        correctionTimer -> pause();
+        #ifdef ENABLE_CORRECTION_TIMER
+            correctionTimer -> pause();
+        #endif
 
         // Disable the PID correction timer if needed
         #ifdef ENABLE_PID
@@ -223,13 +235,15 @@ void disableStepCorrection() {
 // Set the speed of the step correction timer
 void updateCorrectionTimer() {
 
-    // Check the previous value of the timer, only changing if it is different
-    if (correctionTimer -> getCount(HERTZ_FORMAT) != round(STEP_UPDATE_FREQ * motor.getMicrostepping())) {
-        correctionTimer -> pause();
-        correctionTimer -> setOverflow(round(STEP_UPDATE_FREQ * motor.getMicrostepping()), HERTZ_FORMAT);
-        correctionTimer -> refresh();
-        correctionTimer -> resume();
-    }
+    #ifdef ENABLE_CORRECTION_TIMER
+        // Check the previous value of the timer, only changing if it is different
+        if (correctionTimer -> getCount(HERTZ_FORMAT) != round(STEP_UPDATE_FREQ * motor.getMicrostepping())) {
+            correctionTimer -> pause();
+            correctionTimer -> setOverflow(round(STEP_UPDATE_FREQ * motor.getMicrostepping()), HERTZ_FORMAT);
+            correctionTimer -> refresh();
+            correctionTimer -> resume();
+        }
+    #endif
 }
 
 

@@ -22,6 +22,7 @@
 #define POW_2_16                    65536.0   // 2^16
 #define POW_2_15                    32768.0   // 2^15
 #define POW_2_7                     128.0     // 2^7
+#define IS_BIT_15                   0x8000
 #define DELETE_BIT_15               0x7FFF    // Used to delete everything except the first 15 bits
 #define CHANGE_UINT_TO_INT_15       0x8000    // Used to change unsigned 16 bit integer into signed
 #define CHECK_BIT_14                0x4000    // Used to check the 14th bit
@@ -290,10 +291,15 @@ class Encoder {
         double getAngleNow();
         // Reads the average value for the angle of the encoder (ranges from 0-360)
         double getAngleAvg();
+
+        #ifndef ENCODER_SPEED_ESTIMATION
+        int16_t getRawSpeed();
+        #endif
+
         double getSpeed();
         double getAccel();
+        double getTempNow();
         double getTemp();
-        double getRawRev();
         double getRev();
         double getAbsoluteAngle();
         void setStepOffset(double offset);
@@ -306,10 +312,22 @@ class Encoder {
             bool sampleTimeExceeded();
         #endif
 
+        uint8_t crc8(uint8_t *data, uint8_t length);
+        double calculateAngleSpeed(double angRange, int16_t rawAngleSpeed, uint16_t firMD, uint16_t predictionVal);
+
     private:
         // Variables
         uint32_t lastAngleSampleTime;
         double lastEncoderAngle = 0;
+
+        // Last state of getRawSpeed()
+        int16_t lastSpeed = 0;
+
+        // Last state of getRawRev()
+        int16_t lastRev = 0;
+        // Revolutions extender variable
+        int32_t revolutions = 0;
+        // Total revolutions is revolutions*512+getRawRev()
 
         // Moving average instances
         MovingAverage <float> encoderSpeedAvg;
@@ -332,6 +350,8 @@ class Encoder {
         #ifdef ENABLE_OVERTEMP_PROTECTION
             uint32_t lastOvertempTime = 0;
         #endif
+
+        int16_t  getRawRev();
 };
 
 #endif

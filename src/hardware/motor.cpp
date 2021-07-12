@@ -287,6 +287,9 @@ void StepperMotor::simpleStep() {
 // Computes the coil values for the next step position and increments the set angle
 void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos) {
 
+    // Sample time
+    uint32_t currentTime = micros();
+
     // Main angle change (any inversions * angle of microstep)
     float angleChange = this -> microstepAngle;
     int32_t stepChange = 1;
@@ -328,6 +331,21 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
 
     // Drive the coils to their destination
     this -> driveCoils(currentStep);
+
+    // Compute the velocity
+    velocityFlag = false;
+    velocity = 1000000.0 * angleChange / (currentTime - lastStepSampleTime);
+    velocityFlag = true;
+
+    // Correct the last angle and sample time
+    lastAngle = desiredAngle;
+    lastStepSampleTime = currentTime;
+
+}
+
+
+float  StepperMotor::getRPM() {
+    return velocity * 60 / 360;
 }
 
 

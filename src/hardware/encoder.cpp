@@ -164,6 +164,8 @@ Encoder::Encoder() {
     encoderStepsAvg.begin(ANGLE_AVG_READINGS);
     encoderTempAvg.begin(TEMP_AVG_READINGS);
 
+    lastRev = getRawRev();
+
     // Populate the average angle reading table
     for (uint8_t index = 0; index < ANGLE_AVG_READINGS; index++) {
         getAngleAvg();
@@ -567,6 +569,36 @@ double Encoder::getSpeed() {
     return encoderSpeedAvg.get();
 }
 
+/*
+// Reads the raw value from the angle register of the encoder (unadjusted)
+uint16_t Encoder::getRawStepsNow() {
+
+    // Create an accumulator for the raw data
+    uint16_t rawData;
+
+    // Loop until a valid reading
+    while (readRegister(ENCODER_ANGLE_REG, rawData) != NO_ERROR);
+
+    // Delete the first bit, saving the last 15
+    return (rawData & (DELETE_BIT_15));
+}
+
+
+// Reads the raw average value from the angle register of the encoder (unadjusted)
+uint16_t Encoder::getRawStepsAvg() {
+
+    // Read the momentary rawData
+    uint16_t rawData = getRawStepsNow();
+
+    // Add the value to the filter
+    encoderStepsAvg.add(rawData);
+
+    // Return the average
+    return encoderStepsAvg.get();
+}
+
+*/
+
 
 // Returns true if the encoder's minimum speed sample interval has been exceeded
 bool Encoder::sampleTimeExceeded() {
@@ -574,16 +606,45 @@ bool Encoder::sampleTimeExceeded() {
 }
 
 
-#else // ENCODER_ESTIMATION
+#else // ENCODER_SPEED_ESTIMATION
+
+int16_t Encoder::getRawSpeed() {
+
+    // Prepare the variables to store data in
+	uint16_t rawData;
+
+    // Read the encoder
+    while (readRegister(ENCODER_SPEED_REG, rawData) != NO_ERROR);
+
+    if (rawData & IS_BIT_15) {
+        // Get raw speed reading
+        rawData &= DELETE_BIT_15;
+
+        // If bit 14 is set, the value is negative
+        if (rawData & CHECK_BIT_14) {
+            rawData -= CHANGE_UINT_TO_INT_15;
+        }
+
+        lastSpeed = rawData;
+
+        return (int16_t)rawData;
+    }
+    else {
+        return lastSpeed;
+    }
+
+}
 
 // Reads the speed of the encoder in deg/s
 double Encoder::getSpeed() {
 
     // Prepare the variables to store data in
-	uint16_t rawData[4];
+	uint16_t rawData[6];
 
     // Read the encoder, modifying the array
     readMultipleRegisters(ENCODER_SPEED_REG, rawData, sizeof(rawData) / sizeof(uint16_t));
+
+    Serial.println("rawData[5]:" + String(rawData[5]));
 
 	// Get raw speed reading
 	int16_t rawSpeed = rawData[0];
@@ -591,7 +652,7 @@ double Encoder::getSpeed() {
 
 	// If bit 14 is set, the value is negative
 	if (rawSpeed & CHECK_BIT_14) {
-		rawSpeed = rawSpeed - CHANGE_UINT_TO_INT_15;
+		rawSpeed -= CHANGE_UINT_TO_INT_15;
 	}
 
 	// Get FIR_MD from bits 15 and 16 of register 0x06
@@ -624,7 +685,7 @@ double Encoder::getSpeed() {
     return encoderSpeedAvg.get();
 }
 
-#endif // ! ENCODER_ESTIMATION
+#endif // ! ENCODER_SPEED_ESTIMATION
 
 
 // Calculates the angular acceleration. Done by looking at position over time^2
@@ -650,8 +711,9 @@ double Encoder::getAccel() {
     return encoderAccelAvg.get();
 }
 
-// Reads the temperature of the encoder
-double Encoder::getTemp() {
+
+// Reads the momentary temperature of the encoder
+double Encoder::getTempNow() {
 
     // Create an accumulator for the raw data
     uint16_t rawData;
@@ -664,14 +726,25 @@ double Encoder::getTemp() {
 
     // Check if the value received is positive or negative
     if (rawData & CHECK_BIT_9) {
-        rawData = rawData - CHANGE_UNIT_TO_INT_9;
+        rawData -= CHANGE_UNIT_TO_INT_9;
     }
 
     // Return the value (equation from TLE5012 library)
-    encoderTempAvg.add(((int16_t)rawData + TEMP_OFFSET) / (TEMP_DIV));
+    return ((int16_t)rawData + TEMP_OFFSET) / TEMP_DIV;
+}
 
-    // Calculate the new temperature
-    double temp = encoderTempAvg.get();
+
+// Reads the temperature of the encoder
+double Encoder::getTemp() {
+
+    // Get the momentary temperature
+    double temp = getTempNow();
+
+    // Add to MovingAverage filter
+    encoderTempAvg.add(temp);
+
+    // Get the new temperature
+    temp = encoderTempAvg.get();
 
     // Only compile if overtemp protection is enabled
     #ifdef ENABLE_OVERTEMP_PROTECTION
@@ -714,12 +787,11 @@ double Encoder::getTemp() {
 }
 
 
-// Gets the raw revolutions from the motor
-double Encoder::getRawRev() {
+// Gets the raw revolutions from the motor in range [-258 ... +257]
+int16_t Encoder::getRawRev() {
 
     // Create an accumulator for the raw data and converted data
     uint16_t rawData;
-    int16_t convertedData;
 
     // Loop continuously until there is no error
     while (readRegister(ENCODER_ANGLE_REV_REG, rawData) != NO_ERROR);
@@ -727,22 +799,25 @@ double Encoder::getRawRev() {
     // Delete the first 7 bits, they are not needed
     rawData = (rawData & (DELETE_7_BITS));
 
-    // Copy the raw data over, now that it's almost converted
-    convertedData = rawData;
-
     // Check if the value is negative, if so it needs 512 subtracted from it
-    if (convertedData & CHECK_BIT_9) {
-        convertedData -= 512;
+    if (rawData & CHECK_BIT_9) {
+        rawData -= CHANGE_UNIT_TO_INT_9;
     }
 
     // Return the angle measurement
-    return ((double)convertedData);
+    return (int16_t)rawData;
 }
 
 
 // Gets the revolutions of the motor
 double Encoder::getRev() {
-    return (getRawRev() - startupRevOffset);
+    int16_t rawRevNow = getRawRev();
+    if ((lastRev > 0) && (rawRevNow < 0)) // overwlow
+        revolutions++;
+    else if ((lastRev < 0) && (rawRevNow > 0)) // borrow
+        revolutions--;
+    lastRev = rawRevNow;
+    return (double)revolutions * 512 + rawRevNow - startupRevOffset;
 }
 
 
@@ -767,3 +842,67 @@ void Encoder::zero() {
     startupAngleOffset = getRawAngleAvg();
     startupRevOffset = getRawRev();
 }
+
+// class functions
+/*!
+ * Function for calculation the CRC.
+ * @param data byte long data for CRC check
+ * @param length length of data
+ * @return returns 8bit CRC
+ */
+uint8_t crc8(uint8_t *data, uint8_t length)
+{
+	uint32_t crc;
+	int16_t i, bit;
+
+	crc = CRC_SEED;
+	for (i = 0; i < length; i++)
+	{
+		crc ^= data[i];
+		for (bit = 0; bit < 8; bit++)
+		{
+			if ((crc & 0x80) != 0)
+			{
+				crc <<= 1;
+				crc ^= CRC_POLYNOMIAL;
+			}else{
+				crc <<= 1;
+			}
+		}
+	}
+
+	return ((~crc) & CRC_SEED);
+}
+
+/*!
+ * Calculate the angle speed
+ * @param angRange set angular range value
+ * @param rawAngleSpeed raw speed value from read function
+ * @param firMD
+ * @param predictionVal
+ * @return calculated angular speed
+ */
+double calculateAngleSpeed(double angRange, int16_t rawAngleSpeed, uint16_t firMD, uint16_t predictionVal)
+{
+	double finalAngleSpeed;
+	double microsecToSec = 0.000001;
+	double firMDVal;
+	if (firMD == 1)
+	{
+		firMDVal = 42.7;
+	}else if (firMD == 0)
+	{
+		firMDVal = 21.3;
+	}else if (firMD == 2)
+	{
+		firMDVal = 85.3;
+	}else if (firMD == 3)
+	{
+		firMDVal = 170.6;
+	}else{
+		firMDVal = 0;
+	}
+	finalAngleSpeed = ((angRange / POW_2_15) * ((double) rawAngleSpeed)) / (((double) predictionVal) * firMDVal * microsecToSec);
+	return (finalAngleSpeed);
+}
+// end class functions

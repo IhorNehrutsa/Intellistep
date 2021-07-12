@@ -23,7 +23,8 @@
         "cstdint": "cpp",
         "random": "cpp",
         "iosfwd": "cpp",
-        "streambuf": "cpp"
+        "streambuf": "cpp",
+        "tuple": "cpp"
     },
     "cSpell.words": [
         "CANID",
