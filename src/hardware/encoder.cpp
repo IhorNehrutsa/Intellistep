@@ -164,7 +164,7 @@ Encoder::Encoder() {
     encoderStepsAvg.begin(ANGLE_AVG_READINGS);
     encoderTempAvg.begin(TEMP_AVG_READINGS);
 
-    lastRev = getRawRev();
+    lastRawRev = getRawRev();
 
     // Populate the average angle reading table
     for (uint8_t index = 0; index < ANGLE_AVG_READINGS; index++) {
@@ -481,7 +481,7 @@ void Encoder::setBitField(BitField_t bitField, uint16_t bitFNewValue) {
 }
 
 
-// Reads the raw value from the angle register of the encoder (unadjusted)
+// Reads the raw momentary value from the angle register of the encoder (unadjusted)
 uint16_t Encoder::getRawStepsNow() {
 
     // Create an accumulator for the raw data
@@ -491,7 +491,7 @@ uint16_t Encoder::getRawStepsNow() {
     while (readRegister(ENCODER_ANGLE_REG, rawData) != NO_ERROR);
 
     // Delete the first bit, saving the last 15
-    return (rawData & (DELETE_BIT_15));
+    return rawData & DELETE_BIT_15;
 }
 
 
@@ -509,24 +509,24 @@ uint16_t Encoder::getRawStepsAvg() {
 }
 
 
-// Reads the raw momentary value from the angle of the encoder (unadjusted) ???
+// Reads the raw momentary value from the angle of the encoder (unadjusted ???)
 double Encoder::getRawAngleNow() {
     // Create an accumulator for the raw data
     uint16_t rawData = getRawStepsNow();
 
     // Calc the value (equation from TLE5012 library)
-    return ((360.0 / POW_2_15) * (double)rawData) - encoderStepOffset;
+    return 360.0 * (double)rawData / POW_2_15 - encoderStepOffset;
 }
 
 
-// Reads the raw average value from the angle of the encoder (unadjusted) ???
+// Reads the raw average value from the angle of the encoder (unadjusted ???)
 double Encoder::getRawAngleAvg() {
 
     // Read the raw average Steps
     uint16_t rawData = getRawStepsAvg();
 
     // Calc the value (equation from TLE5012 library)
-    return ((360.0 / POW_2_15) * (double)rawData) - encoderStepOffset;
+    return 360.0 * (double)rawData / POW_2_15 - encoderStepOffset;
 }
 
 
@@ -556,7 +556,7 @@ double Encoder::getSpeed() {
     uint32_t currentTime = micros();
 
     // Compute the average velocity
-    double avgVelocity = 1000000 * (newAngle - lastEncoderAngle) / (currentTime - lastAngleSampleTime);
+    double avgVelocity = 1000000.0 * (newAngle - lastEncoderAngle) / (currentTime - lastAngleSampleTime);
 
     // Correct the last angle and sample time
     lastEncoderAngle = newAngle;
@@ -569,36 +569,6 @@ double Encoder::getSpeed() {
     return encoderSpeedAvg.get();
 }
 
-/*
-// Reads the raw value from the angle register of the encoder (unadjusted)
-uint16_t Encoder::getRawStepsNow() {
-
-    // Create an accumulator for the raw data
-    uint16_t rawData;
-
-    // Loop until a valid reading
-    while (readRegister(ENCODER_ANGLE_REG, rawData) != NO_ERROR);
-
-    // Delete the first bit, saving the last 15
-    return (rawData & (DELETE_BIT_15));
-}
-
-
-// Reads the raw average value from the angle register of the encoder (unadjusted)
-uint16_t Encoder::getRawStepsAvg() {
-
-    // Read the momentary rawData
-    uint16_t rawData = getRawStepsNow();
-
-    // Add the value to the filter
-    encoderStepsAvg.add(rawData);
-
-    // Return the average
-    return encoderStepsAvg.get();
-}
-
-*/
-
 
 // Returns true if the encoder's minimum speed sample interval has been exceeded
 bool Encoder::sampleTimeExceeded() {
@@ -606,7 +576,7 @@ bool Encoder::sampleTimeExceeded() {
 }
 
 
-#else // ENCODER_SPEED_ESTIMATION
+#else // ! ENCODER_SPEED_ESTIMATION
 
 int16_t Encoder::getRawSpeed() {
 
@@ -616,39 +586,22 @@ int16_t Encoder::getRawSpeed() {
     // Read the encoder
     while (readRegister(ENCODER_SPEED_REG, rawData) != NO_ERROR);
 
+    // Get raw speed reading
+    rawData &= DELETE_BIT_15;
 
-    if (rawData & IS_BIT_15) {
-        //Serial.println("rawData1:" + String(rawData));
-
-        // Get raw speed reading
-        rawData &= DELETE_BIT_15;
-
-        // If bit 14 is set, the value is negative
-        if (rawData & CHECK_BIT_14) {
-            rawData -= CHANGE_UINT_TO_INT_15;
-        }
-
-        lastSpeed = rawData;
-
-        if (abs(lastSpeed) <= 2)
-            lastSpeed = 0;
-
-        //Serial.println("lastSpeed:" + String(lastSpeed));
-
-        return lastSpeed;
-    }
-    else {
-        Serial.println("rawData0:" + String(rawData));
-        return lastSpeed;
+    // If bit 14 is set, the value is negative
+    if (rawData & CHECK_BIT_14) {
+        rawData -= CHANGE_UINT_TO_INT_15;
     }
 
+    return (int16_t)rawData;
 }
 
 // Reads the speed of the encoder in deg/s
 double Encoder::getSpeed() {
 
     // Prepare the variables to store data in
-	uint16_t rawData[6];
+	uint16_t rawData[4];
 
     // Read the encoder, modifying the array
     readMultipleRegisters(ENCODER_SPEED_REG, rawData, sizeof(rawData) / sizeof(uint16_t));
@@ -695,7 +648,7 @@ double Encoder::getSpeed() {
         Serial.println("laSpeed:" + String(lastSpeed) + " " + String(firMD));
 
     // Calculate and average angle speed in degree per second
-	encoderSpeedAvg.add((1000000.0 * (360.0 / POW_2_15) * (int16_t)lastSpeed) / (2.0 * 42.7));
+	encoderSpeedAvg.add((1000000.0 * 0.5 * (360.0 / POW_2_15) * (int16_t)rawSpeed) / firMDVal);
 
     // Return the result
     return encoderSpeedAvg.get();
@@ -727,9 +680,8 @@ double Encoder::getAccel() {
     return encoderAccelAvg.get();
 }
 
-
-// Reads the momentary temperature of the encoder
-double Encoder::getTempNow() {
+// Reads the raw momentary temperature of the encoder
+int16_t Encoder::getRawTempNow() {
 
     // Create an accumulator for the raw data
     uint16_t rawData;
@@ -745,22 +697,28 @@ double Encoder::getTempNow() {
         rawData -= CHANGE_UNIT_TO_INT_9;
     }
 
-    // Return the value (equation from TLE5012 library)
-    return ((int16_t)rawData + TEMP_OFFSET) / TEMP_DIV;
+    // Return the raw momentary value
+    return (int16_t)rawData;
 }
-
 
 // Reads the temperature of the encoder
 double Encoder::getTemp() {
 
     // Get the momentary temperature
-    double temp = getTempNow();
+    int16_t rawTemp = getRawTempNow();
 
     // Add to MovingAverage filter
-    encoderTempAvg.add(temp);
+    encoderTempAvg.add(rawTemp);
 
-    // Get the new temperature
-    temp = encoderTempAvg.get();
+    // Calculate the new temperature (equation from TLE5012 library)
+
+
+
+    double temp = (encoderTempAvg.get() + TEMP_OFFSET) / TEMP_DIV;
+
+
+
+    double temp = (encoderTempAvg.getDouble() + TEMP_OFFSET) / TEMP_DIV;
 
     // Only compile if overtemp protection is enabled
     #ifdef ENABLE_OVERTEMP_PROTECTION
@@ -828,11 +786,11 @@ int16_t Encoder::getRawRev() {
 // Gets the revolutions of the motor
 double Encoder::getRev() {
     int16_t rawRevNow = getRawRev();
-    if ((lastRev > 0) && (rawRevNow < 0)) // overwlow
+    if ((lastRawRev > 0) && (rawRevNow < 0)) // overwlow
         revolutions++;
-    else if ((lastRev < 0) && (rawRevNow > 0)) // borrow
+    else if ((lastRawRev < 0) && (rawRevNow > 0)) // borrow
         revolutions--;
-    lastRev = rawRevNow;
+    lastRawRev = rawRevNow;
     return (double)revolutions * 512 + rawRevNow - startupRevOffset;
 }
 

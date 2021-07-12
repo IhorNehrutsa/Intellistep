@@ -32,6 +32,7 @@ class MovingAverage {
     void begin(uint16_t smoothFactor = 10);
     void add(T newReading);
     T get();
+    double getDouble();
     T getLast();
     void clear();
 };
@@ -103,6 +104,13 @@ void MovingAverage<T>::add (T newReading) {
 template <typename T>
 T MovingAverage<T>::get() {
     return (runningTotal / readingsNum);
+}
+
+
+// Get the smoothed result as double type
+template <typename T>
+double MovingAverage<T>::getDouble() {
+    return runningTotal / readingsNum;
 }
 
 

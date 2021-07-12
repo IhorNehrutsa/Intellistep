@@ -55,6 +55,8 @@ void setup() {
         initLED();
     #endif
 
+    TIM2_Cap_Init(0xFFFF,0);          //
+
     // Zero the encoder
     motor.encoder.zero();
     #ifdef CHECK_ENCODER_SPEED

@@ -291,15 +291,14 @@ class Encoder {
         double getAngleNow();
         // Reads the average value for the angle of the encoder (ranges from 0-360)
         double getAngleAvg();
-
         #ifndef ENCODER_SPEED_ESTIMATION
         int16_t getRawSpeed();
         #endif
-
         double getSpeed();
         double getAccel();
-        double getTempNow();
+        int16_t getRawTempNow();
         double getTemp();
+        int16_t getRawRev();
         double getRev();
         double getAbsoluteAngle();
         void setStepOffset(double offset);
@@ -324,16 +323,16 @@ class Encoder {
         int16_t lastSpeed = 0;
 
         // Last state of getRawRev()
-        int16_t lastRev = 0;
+        int16_t lastRawRev = 0;
         // Revolutions extender variable
         int32_t revolutions = 0;
-        // Total revolutions is revolutions*512+getRawRev()
+        // Total revolutions = revolutions * 512 + getRawRev()
 
         // Moving average instances
         MovingAverage <float> encoderSpeedAvg;
         MovingAverage <float> encoderAccelAvg;
         MovingAverage <uint16_t> encoderStepsAvg;
-        MovingAverage <float> encoderTempAvg;
+        MovingAverage <int16_t> encoderTempAvg;
 
         // The startup angle and rev offsets
         double startupAngleOffset = 0;
@@ -350,8 +349,6 @@ class Encoder {
         #ifdef ENABLE_OVERTEMP_PROTECTION
             uint32_t lastOvertempTime = 0;
         #endif
-
-        int16_t  getRawRev();
 };
 
 #endif

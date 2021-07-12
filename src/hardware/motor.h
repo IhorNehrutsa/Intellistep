@@ -53,6 +53,10 @@ class StepperMotor {
         // Initialize the motor
         StepperMotor();
 
+        float DegreesPS();
+
+        float getRPS();
+
         float getRPM();
 
         // Returns the current RPM of the motor to two decimal places
