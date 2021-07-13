@@ -234,15 +234,18 @@ void displayMotorData() {
 */
 
 
-//    snprintf(outBuffer, OB_SIZE, "RSP: %10d", motor.encoder.getRawSpeed());
-//    writeOLEDString(0, LINE_HEIGHT * 1, outBuffer, true);
+    #ifndef ENCODER_SPEED_ESTIMATION
+        snprintf(outBuffer, OB_SIZE, "RSP: %10d", motor.encoder.getRawSpeed());
+        writeOLEDString(0, LINE_HEIGHT * 1, outBuffer, true);
+    #endif
 
-    // Temp of the encoder (close to the motor temp)
-    snprintf(outBuffer, OB_SIZE, "Temp: %7.1f C", motor.encoder.getRawTemp());
+    snprintf(outBuffer, OB_SIZE, "RTemp: %7d", motor.encoder.getRawTemp());
     writeOLEDString(0, LINE_HEIGHT * 2, outBuffer, true);
 
-    snprintf(outBuffer, OB_SIZE, "PPM: %10.2f", motor.getRPM());
-    writeOLEDString(0, LINE_HEIGHT * 3, outBuffer, true);
+    #ifdef ENABLE_STEPPING_VELOCITY
+        snprintf(outBuffer, OB_SIZE, "PPM: %10.2f", motor.getRPM());
+        writeOLEDString(0, LINE_HEIGHT * 3, outBuffer, true);
+    #endif
 }
 
 

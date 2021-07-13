@@ -53,11 +53,11 @@ class StepperMotor {
         // Initialize the motor
         StepperMotor();
 
-        float getDegreesPS();
+        #ifdef ENABLE_STEPPING_VELOCITY
+            float getDegreesPS();
 
-        float getRPS();
-
-        float getRPM();
+            float getRPM();
+        #endif
 
         // Returns the current RPM of the motor to two decimal places
         float getMotorRPM();
@@ -205,12 +205,14 @@ class StepperMotor {
         // Keeps the current steps of the motor
         int32_t currentStep = 0;
 
-        // variables to calculate the stepping interface velocity
-        float angleChange = 0.0;
-        int32_t prevStepingSampleTime = 0; // micros()
-        int32_t nowStepingSampleTime = 0; // micros()
-        // isStepping == true mean that three variables above can be changed
-        bool isStepping = false;
+        #ifdef ENABLE_STEPPING_VELOCITY
+            // variables to calculate the stepping interface velocity
+            float angleChange = 0.0;
+            int32_t prevStepingSampleTime = 0; // micros()
+            int32_t nowStepingSampleTime = 0; // micros()
+            // isStepping == true mean that three variables above can be changed
+            bool isStepping = false;
+        #endif
 
         // Motor characteristics
         #ifdef ENABLE_DYNAMIC_CURRENT

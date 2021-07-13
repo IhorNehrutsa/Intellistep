@@ -10,6 +10,7 @@
 #define PATCH_VERSION (uint16_t)42
 
 //#define ENABLE_CORRECTION_TIMER
+//#define ENABLE_STEPPING_VELOCITY
 
 // --------------  Settings  --------------
 
@@ -46,7 +47,7 @@
 #define TEMP_AVG_READINGS    (uint16_t)200
 
 // If encoder estimation should be used
-#define ENCODER_SPEED_ESTIMATION
+//#define ENCODER_SPEED_ESTIMATION
 #ifdef ENCODER_SPEED_ESTIMATION
     #define SPD_EST_MIN_INTERVAL 500 // The minimum sampling interval (us). Increase to get more steady readings at the cost of latency
 #endif
