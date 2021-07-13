@@ -159,11 +159,13 @@ Encoder::Encoder() {
     //writeToEncoderRegister(ENCODER_ACT_STATUS_REG, 0x401);
 
     // Setup the moving average calculations
-    encoderSpeedAvg.begin(RPM_AVG_READINGS);
-    encoderAccelAvg.begin(ACCEL_AVG_READINGS);
-    encoderStepsAvg.begin(ANGLE_AVG_READINGS);
-    encoderTempAvg.begin(TEMP_AVG_READINGS);
+    speedAvg.begin(RPM_AVG_READINGS);
+    accelAvg.begin(ACCEL_AVG_READINGS);
+    stepAvg.begin(ANGLE_AVG_READINGS);
+    absAngleAvg.begin(ANGLE_AVG_READINGS);
+    tempAvg.begin(TEMP_AVG_READINGS);
 
+    // Set the last raw revolution value (used to detect revolution change)
     lastRawRev = getRawRev();
 
     // Populate the average angle reading table
@@ -177,7 +179,7 @@ Encoder::Encoder() {
 
     // Set the correct starting values for the estimation if using estimation
     #ifdef ENCODER_SPEED_ESTIMATION
-        lastEncoderAngle = getAbsoluteAngle();
+        lastEncoderAngle = getAbsoluteAngleAvg();
         lastAngleSampleTime = micros();
     #endif
 
@@ -482,7 +484,7 @@ void Encoder::setBitField(BitField_t bitField, uint16_t bitFNewValue) {
 
 
 // Reads the raw momentary value from the angle register of the encoder (unadjusted)
-uint16_t Encoder::getRawStepsNow() {
+uint16_t Encoder::getRawSteps() {
 
     // Create an accumulator for the raw data
     uint16_t rawData;
@@ -499,23 +501,24 @@ uint16_t Encoder::getRawStepsNow() {
 uint16_t Encoder::getRawStepsAvg() {
 
     // Read the momentary rawData
-    uint16_t rawData = getRawStepsNow();
+    uint16_t rawData = getRawSteps();
 
     // Add the value to the filter
-    encoderStepsAvg.add(rawData);
+    stepAvg.add(rawData);
 
     // Return the average
-    return encoderStepsAvg.get();
+    return stepAvg.get();
 }
 
 
 // Reads the raw momentary value from the angle of the encoder (unadjusted ???)
-double Encoder::getRawAngleNow() {
+double Encoder::getRawAngle() {
+
     // Create an accumulator for the raw data
-    uint16_t rawData = getRawStepsNow();
+    uint16_t rawData = getRawSteps();
 
     // Calc the value (equation from TLE5012 library)
-    return 360.0 * (double)rawData / POW_2_15 - encoderStepOffset;
+    return ((360.0 / POW_2_15) * (double)rawData) - encoderStepOffset;
 }
 
 
@@ -526,13 +529,13 @@ double Encoder::getRawAngleAvg() {
     uint16_t rawData = getRawStepsAvg();
 
     // Calc the value (equation from TLE5012 library)
-    return 360.0 * (double)rawData / POW_2_15 - encoderStepOffset;
+    return 360.0 / POW_2_15 * (double)rawData - encoderStepOffset;
 }
 
 
 // Reads the momentary value for the angle of the encoder (ranges from 0-360)
-double Encoder::getAngleNow() {
-    return (getRawAngleNow() - startupAngleOffset);
+double Encoder::getAngle() {
+    return (getRawAngle() - startupAngleOffset);
 }
 
 
@@ -550,7 +553,7 @@ double Encoder::getAngleAvg() {
 double Encoder::getSpeed() {
 
     // Get the newest angle
-    double newAngle = getAbsoluteAngle();
+    double newAngle = getAbsoluteAngleAvg();
 
     // Sample time
     uint32_t currentTime = micros();
@@ -563,10 +566,10 @@ double Encoder::getSpeed() {
     lastAngleSampleTime = currentTime;
 
     // Add the value to the averaging list
-    encoderSpeedAvg.add(avgVelocity);
+    speedAvg.add(avgVelocity);
 
     // Return the averaged velocity
-    return encoderSpeedAvg.get();
+    return speedAvg.get();
 }
 
 
@@ -661,7 +664,7 @@ double Encoder::getSpeed() {
 double Encoder::getAccel() {
 
     // Get the newest angle
-    double newAngle = getAbsoluteAngle();
+    double newAngle = getAbsoluteAngleAvg();
 
     // Sample time
     uint32_t currentTime = micros();
@@ -674,14 +677,15 @@ double Encoder::getAccel() {
     lastAngleSampleTime = currentTime;
 
     // Add the value to the averaging list
-    encoderAccelAvg.add(avgAccel);
+    accelAvg.add(avgAccel);
 
     // Return the averaged velocity
-    return encoderAccelAvg.get();
+    return accelAvg.get();
 }
 
+
 // Reads the raw momentary temperature of the encoder
-int16_t Encoder::getRawTempNow() {
+int16_t Encoder::getRawTemp() {
 
     // Create an accumulator for the raw data
     uint16_t rawData;
@@ -701,24 +705,18 @@ int16_t Encoder::getRawTempNow() {
     return (int16_t)rawData;
 }
 
+
 // Reads the temperature of the encoder
 double Encoder::getTemp() {
 
     // Get the momentary temperature
-    int16_t rawTemp = getRawTempNow();
+    int16_t rawTemp = getRawTemp();
 
     // Add to MovingAverage filter
-    encoderTempAvg.add(rawTemp);
+    tempAvg.add(rawTemp);
 
     // Calculate the new temperature (equation from TLE5012 library)
-
-
-
-    double temp = (encoderTempAvg.get() + TEMP_OFFSET) / TEMP_DIV;
-
-
-
-    double temp = (encoderTempAvg.getDouble() + TEMP_OFFSET) / TEMP_DIV;
+    double temp = (tempAvg.getDouble() + TEMP_OFFSET) / TEMP_DIV;
 
     // Only compile if overtemp protection is enabled
     #ifdef ENABLE_OVERTEMP_PROTECTION
@@ -785,8 +783,10 @@ int16_t Encoder::getRawRev() {
 
 // Gets the revolutions of the motor
 double Encoder::getRev() {
+
+    // Get the raw value
     int16_t rawRevNow = getRawRev();
-    if ((lastRawRev > 0) && (rawRevNow < 0)) // overwlow
+    if ((lastRawRev > 0) && (rawRevNow < 0)) // overflow
         revolutions++;
     else if ((lastRawRev < 0) && (rawRevNow > 0)) // borrow
         revolutions--;
@@ -796,10 +796,13 @@ double Encoder::getRev() {
 
 
 // Gets the absolute angle of the motor
-double Encoder::getAbsoluteAngle() {
+double Encoder::getAbsoluteAngleAvg() {
+
+    // Add a new value to the average
+    absAngleAvg.add((float)((getRev() * 360) + getAngle()));
 
     // Return the average
-    return getRev() * 360 + getAngleAvg();
+    return (double)absAngleAvg.get();
 }
 
 

@@ -216,7 +216,7 @@ void displayMotorData() {
         if (motor.encoder.sampleTimeExceeded())
     #endif // ! ENCODER_SPEED_ESTIMATION
         {
-            snprintf(outBuffer, OB_SIZE, "RPM: %10.3f", motor.getMotorRPM());
+            snprintf(outBuffer, OB_SIZE, "RPM: %10.2f", motor.getMotorRPM());
             writeOLEDString(0, 0, outBuffer, false);
         }
 /*
@@ -238,10 +238,10 @@ void displayMotorData() {
 //    writeOLEDString(0, LINE_HEIGHT * 1, outBuffer, true);
 
     // Temp of the encoder (close to the motor temp)
-    snprintf(outBuffer, OB_SIZE, "Temp: %7.1f C", motor.encoder.getTempNow());
+    snprintf(outBuffer, OB_SIZE, "Temp: %7.1f C", motor.encoder.getRawTemp());
     writeOLEDString(0, LINE_HEIGHT * 2, outBuffer, true);
 
-    snprintf(outBuffer, OB_SIZE, "PPM: %10.3f", motor.getRPM());
+    snprintf(outBuffer, OB_SIZE, "PPM: %10.2f", motor.getRPM());
     writeOLEDString(0, LINE_HEIGHT * 3, outBuffer, true);
 }
 

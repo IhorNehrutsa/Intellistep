@@ -131,7 +131,7 @@ String parseCommand(String buffer) {
 
                 // Loop forever, until a new value is sent
                 while (!(Serial.available() > 0)) {
-                    Serial.println(motor.encoder.getAbsoluteAngle());
+                    Serial.println(motor.encoder.getAbsoluteAngleAvg());
                 }
 
                 // When all done, the exit is acknowledged

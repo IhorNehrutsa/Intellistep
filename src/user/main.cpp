@@ -55,7 +55,7 @@ void setup() {
         initLED();
     #endif
 
-    TIM2_Cap_Init(0xFFFF,0);          //
+    //TIM2_Cap_Init(0xFFFF,0);          //
 
     // Zero the encoder
     motor.encoder.zero();
@@ -139,7 +139,7 @@ void setup() {
     //writeOLEDString(0, 0, "Close Loop Mode");
 
     // Check if the board is calibrated. Need to force calibration if the board isn't calibrated
-    if (0 && !isCalibrated()) {
+    if (!isCalibrated()) {
 
         // Only display to screen if the screen is enabled
         #ifdef ENABLE_OLED

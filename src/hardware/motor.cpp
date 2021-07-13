@@ -44,13 +44,13 @@ float StepperMotor::getMotorRPM() {
 
 // Returns the angular deviation of the motor from the desired angle
 float StepperMotor::getAngleError() {
-    return (encoder.getAbsoluteAngle() - (this -> desiredAngle));
+    return (encoder.getAbsoluteAngleAvg() - (this -> desiredAngle));
 }
 
 
 // Returns the step deviation of the motor from the desired step
 int32_t StepperMotor::getStepError() {
-    return (round(encoder.getAbsoluteAngle() / (this -> microstepAngle)) - (this -> desiredStep));
+    return (round(encoder.getAbsoluteAngleAvg() / (this -> microstepAngle)) - (this -> desiredStep));
 }
 
 
@@ -287,11 +287,14 @@ void StepperMotor::simpleStep() {
 // Computes the coil values for the next step position and increments the set angle
 void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos) {
 
-    // Sample time
-    uint32_t currentTime = micros();
+    isStepping = true;
+
+    // Sample times
+    prevStepingSampleTime = nowStepingSampleTime;
+    nowStepingSampleTime = micros();
 
     // Main angle change (any inversions * angle of microstep)
-    float angleChange = this -> microstepAngle;
+    angleChange = this -> microstepAngle;
     int32_t stepChange = 1;
 
     // Factor in the multiplier if specified
@@ -314,6 +317,8 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
         angleChange *= -1;
     }
 
+    isStepping = false;
+
     // Fix the step change's sign
     stepChange *= getSign(angleChange);
 
@@ -331,21 +336,24 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
 
     // Drive the coils to their destination
     this -> driveCoils(currentStep);
-
-    // Compute the velocity
-    velocityFlag = false;
-    velocity = 1000000.0 * angleChange / (currentTime - lastStepSampleTime);
-    velocityFlag = true;
-
-    // Correct the last angle and sample time
-    lastAngle = desiredAngle;
-    lastStepSampleTime = currentTime;
-
 }
 
 
+// Compute the stepping interface velocity in deg/s
+float StepperMotor::getDegreesPS() {
+    calc:
+    while (isStepping)
+        ;
+    float velocity = 1000000.0 * angleChange / (nowStepingSampleTime - prevStepingSampleTime);
+    if (isStepping)
+        goto calc;
+    return velocity;
+}
+
+
+// Compute the stepping interface velocity in RPM
 float  StepperMotor::getRPM() {
-    return velocity * 60 / 360;
+    return getDegreesPS() * 60 / 360;
 }
 
 
@@ -665,7 +673,6 @@ void StepperMotor::calibrate() {
 
     // Reboot the chip
     NVIC_SystemReset();
-
 }
 
 // Returns -1 if the number is less than 0, 1 otherwise

@@ -279,16 +279,19 @@ class Encoder {
         void resetSafety();
 
         // Fast functions
-        uint16_t getRawStepsNow();
+        uint16_t getRawSteps();
         uint16_t getRawStepsAvg();
 
         // High level encoder functions
         // Reads the raw momentary value from the angle of the encoder (unadjusted)
-        double getRawAngleNow();
+        double getRawAngle();
+
         // Reads the raw average value from the angle of the encoder (unadjusted)
         double getRawAngleAvg();
+
         // Reads the momentary value for the angle of the encoder (ranges from 0-360)
-        double getAngleNow();
+        double getAngle();
+
         // Reads the average value for the angle of the encoder (ranges from 0-360)
         double getAngleAvg();
         #ifndef ENCODER_SPEED_ESTIMATION
@@ -296,11 +299,11 @@ class Encoder {
         #endif
         double getSpeed();
         double getAccel();
-        int16_t getRawTempNow();
+        int16_t getRawTemp();
         double getTemp();
         int16_t getRawRev();
         double getRev();
-        double getAbsoluteAngle();
+        double getAbsoluteAngleAvg();
         void setStepOffset(double offset);
         void zero();
 
@@ -324,15 +327,17 @@ class Encoder {
 
         // Last state of getRawRev()
         int16_t lastRawRev = 0;
+
         // Revolutions extender variable
+        // Total revolutions = (revolutions * 512) + getRawRev()
         int32_t revolutions = 0;
-        // Total revolutions = revolutions * 512 + getRawRev()
 
         // Moving average instances
-        MovingAverage <float> encoderSpeedAvg;
-        MovingAverage <float> encoderAccelAvg;
-        MovingAverage <uint16_t> encoderStepsAvg;
-        MovingAverage <int16_t> encoderTempAvg;
+        MovingAverage <float> speedAvg;
+        MovingAverage <float> accelAvg;
+        MovingAverage <uint16_t> stepAvg;
+        MovingAverage <float> absAngleAvg;
+        MovingAverage <int16_t> tempAvg;
 
         // The startup angle and rev offsets
         double startupAngleOffset = 0;

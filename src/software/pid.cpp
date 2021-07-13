@@ -96,7 +96,7 @@ void StepperPID::setOutputLimits(float newMin, float newMax) {
 float StepperPID::compute() {
 
     // Update the input
-    this -> input = (float)motor.encoder.getAbsoluteAngle();
+    this -> input = (float)motor.encoder.getAbsoluteAngleAvg();
 
     // Update the setpoint
     this -> setpoint = motor.getDesiredAngle();
