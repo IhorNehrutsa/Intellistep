@@ -4,10 +4,6 @@
 // Import the config
 #include "config.h"
 
-// Checking functions
-#define IS_POWER_2(N) ((N) & ((N)-1)) // Return 0 if a number is a power of 2.
-
-
 // Check to make sure that at least a peak or RMS max current is defined
 #if !(defined(MAX_PEAK_BOARD_CURRENT) || defined(MAX_RMS_BOARD_CURRENT))
     #error "A max peak or max RMS current must be defined!"
@@ -115,3 +111,13 @@
 
 // Main firmware print string
 #define FIRMWARE_FEATURE_PRINT String(FIRMWARE_FEATURE_VERSION + FIRMWARE_BUILD_INFO + FIRMWARE_FEATURE_HEADER + FIRMWARE_FEATURE_OLED + FIRMWARE_FEATURE_SERIAL + FIRMWARE_FEATURE_CAN + FIRMWARE_FEATURE_STALLFAULT + FIRMWARE_FEATURE_DYNAMIC_CURRENT + FIRMWARE_FEATURE_OVERTEMP_PROTECTION)
+
+
+// Check for defines that have conflicts
+#if (defined(ENABLE_BLINK) + defined(CHECK_STEPPING_RATE) + defined(CHECK_CORRECT_MOTOR_RATE) + defined(CHECK_ENCODER_SPEED) > 1)
+    #error Only one of the following is allowed at a time: ENABLE_BLINK, CHECK_STEPPING_RATE, CHECK_CORRECT_MOTOR_RATE, or CHECK_ENCODER_SPEED
+#endif
+
+#if defined(CHECK_MCO_OUTPUT) && defined(CHECK_GPIO_OUTPUT_SWITCHING)
+    #error Only one of the following is allowed at a time: CHECK_MCO_OUTPUT, CHECK_GPIO_OUTPUT_SWITCHING
+#endif

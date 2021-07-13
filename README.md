@@ -53,6 +53,7 @@ G/M Code Table
 - [CAP1Sup](https://github.com/CAP1Sup) - Main rewrite of code
 - [IhorNehrutsa](https://github.com/IhorNehrutsa) - Large performance gains, general code work
 - [TazerReloaded](https://github.com/TazerReloaded) - Encoder protocol and communication, much faster snprintf string printing
+- [jlmxyz](https://github.com/jlmxyz) - Board schematics (in KiCad folder)
 - [Misfittech](https://github.com/Misfittech) - The [Smart Stepper project](https://github.com/Misfittech/nano_stepper). This was a large help when writing the correct stepping code.
 - [Matt Fryer](https://github.com/MattFryer) - [Smoothed](https://github.com/MattFryer/Smoothed) library. This was a huge help when smoothing out the OLED values to make them more readable and accurate
 - [Marlin](https://github.com/MarlinFirmware/Marlin) - Autobuilding templates
