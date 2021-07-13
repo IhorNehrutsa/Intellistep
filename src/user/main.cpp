@@ -70,7 +70,7 @@ void setup() {
 
     // Setup the motor for use
     motor.setState(DISABLED, true);
-    motor.setMicrostepping(32);
+    motor.setMicrostepping(1);
     //motor.setDesiredAngle(100);
 
     // Only run if the OLED is enabled

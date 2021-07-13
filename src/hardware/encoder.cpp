@@ -648,7 +648,7 @@ double Encoder::getSpeed() {
         else
             lastSpeed |= 7;
 */
-        Serial.println("laSpeed:" + String((int16_t)rawSpeed) + " " + String(rawData[0])); // + " " + String(firMD)); //  + " " + String(getRawSpeed()) //  + " " + String((int16_t)irawSpeed)
+        //Serial.println("laSpeed:" + String((int16_t)rawSpeed) + " " + String(rawData[0])); // + " " + String(firMD)); //  + " " + String(getRawSpeed()) //  + " " + String((int16_t)irawSpeed)
 
     // Calculate and average angle speed in degree per second
 	speedAvg.add((1000000.0 * 0.5 * (360.0 / POW_2_15) * rawSpeed) / firMDVal);
