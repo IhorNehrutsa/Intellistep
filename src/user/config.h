@@ -10,10 +10,7 @@
 // Version of the firmware (displayed on OLED) (follows semantic versioning)
 #define MAJOR_VERSION (uint16_t)0
 #define MINOR_VERSION (uint16_t)0
-#define PATCH_VERSION (uint16_t)42
-
-//#define ENABLE_CORRECTION_TIMER
-#define ENABLE_STEPPING_VELOCITY
+#define PATCH_VERSION (uint16_t)44
 
 // --------------  Settings  --------------
 
@@ -21,7 +18,6 @@
 #define ENABLE_LED // red LED labeled as an 'error' in the schema
 #ifdef ENABLE_LED
     //#define ENABLE_BLINK
-    #define CHECK_STEPPING_RATE
     //#define CHECK_CORRECT_MOTOR_RATE
     //#define CHECK_ENCODER_SPEED
 #endif
@@ -39,8 +35,6 @@
     // Warning thresholds
     #define WARNING_RMS_CURRENT 1000 // The RMS current at which to display a warning confirmation (mA)
     //#define WARNING_PEAK_CURRENT 1000 // The peak current at which to display a warning confirmation (mA)
-
-#else // ! ENABLE_OLED
     // MCO is PA_8 pin, It also used as OLED_RST_PIN
     //#define CHECK_MCO_OUTPUT // Use an oscilloscope to measure frequency of HSI, HSE, SYSCLK or PLLCLK/2
 
@@ -121,7 +115,7 @@
 #endif
 
 // PID settings
-// ! At this time this feature is still under development
+// ! At this time, this feature is still under development
 //#define ENABLE_PID
 #ifdef ENABLE_PID
 
@@ -359,6 +353,28 @@
 //#define GPIO_READ(pn) digitalReadFast(pn)
 //#define GPIO_READ(pn) digital_io_read(get_GPIO_Port(STM_PORT(pn)), STM_GPIO_PIN(pn))
 #define GPIO_READ(pn) LL_GPIO_IsInputPinSet(get_GPIO_Port(STM_PORT(pn)), STM_LL_GPIO_PIN(pn))
+
+// --------------  Debugging  --------------
+
+//#define ENABLE_CORRECTION_TIMER
+#define ENABLE_STEPPING_VELOCITY
+#define IGNORE_FLASH_VERSION
+
+// LED related debugging
+#ifdef ENABLE_LED
+    //#define CHECK_STEPPING_RATE
+    //#define CHECK_CORRECT_MOTOR_RATE
+    //#define CHECK_ENCODER_SPEED
+#endif
+
+// Clock debugging (uses OLED pin)
+#ifndef ENABLE_OLED
+    // MCO is PA_8 pin, It also used as OLED_RST_PIN
+    //#define CHECK_MCO_OUTPUT // Use an oscilloscope to measure frequency of HSI, HSE, SYSCLK or PLLCLK/2
+
+    // The PA_8 pin is used
+    //#define CHECK_GPIO_OUTPUT_SWITCHING // Use an oscilloscope to measure frequency of the GPIO PA_8 output switching
+#endif
 
 // Import the sanity check (needed so all files have the defines done in the sanity check file)
 // Must be last so that it can use the defines above

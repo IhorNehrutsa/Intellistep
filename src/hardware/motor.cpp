@@ -67,7 +67,7 @@ float StepperMotor::getDegreesPS() {
 float  StepperMotor::getSteppingRPM() {
     return DPS_TO_RPM(getDegreesPS());
 }
-#endif
+#endif // ! ENABLE_STEPPING_VELOCITY
 
 
 // Returns the angular deviation of the motor from the desired angle
@@ -347,9 +347,10 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
         prevStepingSampleTime = nowStepingSampleTime;
         nowStepingSampleTime = micros();
 
-    #else
+    #else // ! ENABLE_STEPPING_VELOCITY
         float angleChange;
     #endif
+
     // Main angle change (any inversions * angle of microstep)
     angleChange = this -> microstepAngle;
     int32_t stepChange = this -> microstepMultiplier;
@@ -499,11 +500,11 @@ void StepperMotor::driveCoilsAngle(float degAngle) {
     }
 
     // Convert the angle to microstep values (formula uses degAngle * full steps for rotation * microsteps)
-    float _microstepAngle = (degAngle / this -> fullStepAngle) * (this -> microstepDivisor);
+    float microstepAngle = (degAngle / this -> fullStepAngle) * (this -> microstepDivisor);
 
     // Round the microstep angle, it has to be a whole value of the number of microsteps available
     // Also ensures that the coils are being driven to the major step positions (increases torque)
-    uint16_t roundedMicrosteps = round(_microstepAngle);
+    uint16_t roundedMicrosteps = round(microstepAngle);
 
     // Drive the coils to the found microstep
     driveCoils(roundedMicrosteps);

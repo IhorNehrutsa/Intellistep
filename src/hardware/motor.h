@@ -213,8 +213,8 @@ class StepperMotor {
         #ifdef ENABLE_STEPPING_VELOCITY
             // variables to calculate the stepping interface velocity
             float angleChange = 0.0;
-            int32_t prevStepingSampleTime = 0; // micros()
-            int32_t nowStepingSampleTime = 0; // micros()
+            uint32_t prevStepingSampleTime = 0; // micros()
+            uint32_t nowStepingSampleTime = 0; // micros()
             // isStepping == true mean that three variables above can be changed
             bool isStepping = false;
         #endif

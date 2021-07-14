@@ -215,7 +215,7 @@ void displayMotorData() {
 
     // Check if the motor RPM can be updated. The update rate of the speed must be limited while using encoder speed estimation
     if (motor.encoder.sampleTimeExceeded()) {
-        snprintf(outBuffer, OB_SIZE, "RPM:%11.3f", motor.getEstimRPM());
+        snprintf(outBuffer, OB_SIZE, "RPM:% 10.3f", motor.getEstimRPM());
         writeOLEDString(0, 0, outBuffer, false);
     }
 
@@ -228,11 +228,11 @@ void displayMotorData() {
     #endif // ! ENCODER_SPEED_ESTIMATION
 /*
     // Angle error
-    snprintf(outBuffer, OB_SIZE, "Err:% 011.2f", motor.getAngleError());
+    snprintf(outBuffer, OB_SIZE, "Err: % 010.2f", motor.getAngleError());
     writeOLEDString(0, LINE_HEIGHT, outBuffer, false);
 
     // Current angle of the motor
-    snprintf(outBuffer, OB_SIZE, "Deg:% 011.2f", motor.encoder.getAbsoluteAngleAvg());
+    snprintf(outBuffer, OB_SIZE, "Deg: % 010.2f", motor.encoder.getAbsoluteAngleAvg());
     writeOLEDString(0, LINE_HEIGHT * 2, outBuffer, false);
 */
     // Temp of the encoder (close to the motor temp)

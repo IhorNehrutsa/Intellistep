@@ -267,6 +267,9 @@ bool isCalibrated() {
 // Returns true if the version matches, false if it doesn't
 bool checkVersionMatch() {
 
+    // If the flash version should be ignored
+    #ifndef IGNORE_FLASH_VERSION
+
     // Read the major version number
     if (readFlashU16(FLASH_CONTENTS_MAJOR_VERSION_INDEX) != MAJOR_VERSION) {
 
@@ -287,6 +290,8 @@ bool checkVersionMatch() {
         // Patch version doesn't match
         return false;
     }
+
+    #endif // ! IGNORE_FLASH_VERSION
 
     // If we made it this far, return true
     return true;

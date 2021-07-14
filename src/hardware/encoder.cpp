@@ -260,6 +260,9 @@ errorTypes Encoder::readRegister(uint16_t registerAddress, uint16_t &data) {
 // Read multiple registers
 void Encoder::readMultipleRegisters(uint16_t registerAddress, uint16_t* data, uint16_t dataLength) {
 
+    // Disable interrupts
+    disableInterrupts();
+
     // Pull CS low to select encoder
     GPIO_WRITE(ENCODER_CS_PIN, LOW);
 
@@ -294,6 +297,9 @@ void Encoder::readMultipleRegisters(uint16_t registerAddress, uint16_t* data, ui
 
     // Deselect encoder
     GPIO_WRITE(ENCODER_CS_PIN, HIGH);
+
+    // Enable interrupts
+    enableInterrupts();
 }
 
 
@@ -709,24 +715,7 @@ double Encoder::getAccel() {
 
 // Reads the raw momentary temperature of the encoder
 int16_t Encoder::getRawTemp() {
-#if 0
-    // Create an accumulator for the raw data
-    uint16_t rawData;
 
-    // Loop until a valid reading
-    while (readRegister(ENCODER_TEMP_REG, rawData) != NO_ERROR);
-
-    // Delete everything before the first 7 bits
-    rawData = (rawData & (DELETE_7_BITS));
-
-    // Check if the value received is positive or negative
-    if (rawData & CHECK_BIT_9) {
-        rawData -= CHANGE_UNIT_TO_INT_9;
-    }
-
-    // Return the raw momentary value
-    return (int16_t)rawData;
-#else
     // Create an accumulator for the raw data
     int16_t rawData;
 
@@ -742,7 +731,6 @@ int16_t Encoder::getRawTemp() {
 
     // Return the raw momentary value
     return rawData;
-#endif
 }
 
 
@@ -801,24 +789,7 @@ double Encoder::getTemp() {
 
 // Gets the raw revolutions from the motor in range [-258 ... +257]
 int16_t Encoder::getRawRev() {
-#if 0
-    // Create an accumulator for the raw data and converted data
-    uint16_t rawData;
 
-    // Loop continuously until there is no error
-    while (readRegister(ENCODER_ANGLE_REV_REG, rawData) != NO_ERROR);
-
-    // Delete the first 7 bits, they are not needed
-    rawData = (rawData & (DELETE_7_BITS));
-
-    // Check if the value is negative, if so it needs 512 subtracted from it
-    if (rawData & CHECK_BIT_9) {
-        rawData -= CHANGE_UNIT_TO_INT_9;
-    }
-
-    // Return the angle measurement
-    return (int16_t)rawData;
-#else
     // Create an accumulator for the raw data and converted data
     int16_t rawData;
 
@@ -834,7 +805,6 @@ int16_t Encoder::getRawRev() {
 
     // Return the angle measurement
     return rawData;
-#endif
 }
 
 
@@ -848,7 +818,7 @@ double Encoder::getRev() {
     else if ((lastRawRev < 0) && (rawRevNow > 0)) // borrow
         revolutions--;
     lastRawRev = rawRevNow;
-    return (double)revolutions * 512 + rawRevNow - startupRevOffset;
+    return ((double)revolutions * 512 + rawRevNow - startupRevOffset);
 }
 
 
