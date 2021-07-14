@@ -70,7 +70,7 @@ void setup() {
 
     // Setup the motor for use
     motor.setState(DISABLED, true);
-    //motor.setMicrostepping(1);
+    //motor.setMicrostepping(16);
     //motor.setDesiredAngle(100);
 
     // Only run if the OLED is enabled
@@ -139,7 +139,7 @@ void setup() {
     //writeOLEDString(0, 0, "Close Loop Mode");
 
     // Check if the board is calibrated. Need to force calibration if the board isn't calibrated
-    if (!isCalibrated()) {
+    if (0 && !isCalibrated()) {
 
         // Only display to screen if the screen is enabled
         #ifdef ENABLE_OLED
@@ -226,9 +226,9 @@ void setup() {
     }
 
     motor.setFullStepAngle(1.8);
-    motor.setMicrostepping(1);
+    motor.setMicrostepping(4);
 
-//    motor.encoder.setIncrementsOffset(motor.encoder.getRawIncrementsAvg());
+    //motor.encoder.setIncrementsOffset(motor.encoder.getRawIncrementsAvg());
 }
 
 

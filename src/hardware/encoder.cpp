@@ -195,7 +195,7 @@ Encoder::Encoder() {
 errorTypes Encoder::readRegister(uint16_t registerAddress, uint16_t &data) {
 
     // Disable interrupts
-    //disableInterrupts();
+    disableInterrupts();
 
     // Create an accumulator for error checking
     errorTypes error = NO_ERROR;
@@ -250,7 +250,7 @@ errorTypes Encoder::readRegister(uint16_t registerAddress, uint16_t &data) {
     }
 
     // All done, we can re-enable interrupts
-    //enableInterrupts();
+    enableInterrupts();
 
     // Return error
     return error;
@@ -581,11 +581,12 @@ double Encoder::getEstimSpeed() {
 }
 
 
+#ifdef ENCODER_SPEED_ESTIMATION
 // Returns true if the encoder's minimum speed sample interval has been exceeded
 bool Encoder::sampleTimeExceeded() {
     return (micros() - lastAngleSampleTime > SPD_EST_MIN_INTERVAL);
 }
-
+#endif
 
 int16_t Encoder::getRawSpeed() {
 #if 0
@@ -800,7 +801,7 @@ double Encoder::getTemp() {
 
 // Gets the raw revolutions from the motor in range [-258 ... +257]
 int16_t Encoder::getRawRev() {
-
+#if 0
     // Create an accumulator for the raw data and converted data
     uint16_t rawData;
 
@@ -817,6 +818,23 @@ int16_t Encoder::getRawRev() {
 
     // Return the angle measurement
     return (int16_t)rawData;
+#else
+    // Create an accumulator for the raw data and converted data
+    int16_t rawData;
+
+    // Loop continuously until there is no error
+    while (readRegister(ENCODER_ANGLE_REV_REG, (uint16_t &)rawData) != NO_ERROR);
+
+    // Delete everything before the 14 LSB's
+    rawData <<= 1;
+
+    // If bit 14 is set, the value is negative
+    // Propagate sign of integer
+    rawData >>= 1;
+
+    // Return the angle measurement
+    return rawData;
+#endif
 }
 
 
