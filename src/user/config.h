@@ -50,7 +50,7 @@
 
 // Averages (number of readings in average)
 #define RPM_AVG_READINGS     (uint16_t)10
-#define E_RPM_AVG_READINGS   (uint16_t)100
+#define SPEED_AVG_READINGS   (uint16_t)100
 #define ACCEL_AVG_READINGS   (uint16_t)10
 #define ANGLE_AVG_READINGS   (uint16_t)15
 #define TEMP_AVG_READINGS    (uint16_t)200
@@ -190,9 +190,6 @@
 // Can be set to 64 with SYSCLK_SRC_HSI (internal oscillator)
 #define SYSCLK_FREQ 72
 #define SYSCLK_SRC_HSE_8
-
-// Power of 2, N is positive integer
-#define POWER_2(N) (1U << (N))
 
 // The compare format and maximum value for PWM (lower values = higher max freq)
 #define PWM_COMPARE_FORMAT RESOLUTION_9B_COMPARE_FORMAT

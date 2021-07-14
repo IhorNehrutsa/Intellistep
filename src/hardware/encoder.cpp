@@ -160,7 +160,7 @@ Encoder::Encoder() {
 
     // Setup the moving average calculations
     speedAvg.begin(RPM_AVG_READINGS);
-    rawSpeedAvg.begin(E_RPM_AVG_READINGS);
+    rawSpeedAvg.begin(SPEED_AVG_READINGS);
     accelAvg.begin(ACCEL_AVG_READINGS);
     incrementAvg.begin(ANGLE_AVG_READINGS);
     absAngleAvg.begin(ANGLE_AVG_READINGS);

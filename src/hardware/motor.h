@@ -53,11 +53,11 @@ class StepperMotor {
         // Initialize the motor
         StepperMotor();
 
-        // Returns the current RPM of the encoder
-        float getEncoderRPM();
-
         // Returns the current calculated RPM
         float getEstimRPM();
+
+        // Returns the current RPM of the encoder
+        float getEncoderRPM();
 
         #ifdef ENABLE_STEPPING_VELOCITY
             // Compute the stepping interface velocity in deg/s
