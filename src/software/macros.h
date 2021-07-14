@@ -37,6 +37,12 @@
 // Direction (for reverse direction)
 #define DIRECTION(x) ((x) > 0 ? 1 : (-1))  // Note: zero 'x' is not allowed
 
+// Return angle in range [0..360[
+#define TO360(A) ((A) - DIRECTION(A) * round(abs(A) / 360) * 360)
+
+// Convert DPS(degrees per second) to RPM(rotations per minute)
+#define DPS_TO_RPM(DPS) ((DPS) * 60 / 360)
+
 // Table for GPIO_WRITE methods
 #define GPIO_WRITE_DIGITAL_WRITE         0
 #define GPIO_WRITE_DIGITAL_WRITE_FAST    1

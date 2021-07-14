@@ -13,7 +13,7 @@
 #define PATCH_VERSION (uint16_t)42
 
 //#define ENABLE_CORRECTION_TIMER
-//#define ENABLE_STEPPING_VELOCITY
+#define ENABLE_STEPPING_VELOCITY
 
 // --------------  Settings  --------------
 
@@ -50,12 +50,13 @@
 
 // Averages (number of readings in average)
 #define RPM_AVG_READINGS     (uint16_t)10
+#define E_RPM_AVG_READINGS   (uint16_t)100
 #define ACCEL_AVG_READINGS   (uint16_t)10
 #define ANGLE_AVG_READINGS   (uint16_t)15
 #define TEMP_AVG_READINGS    (uint16_t)200
 
 // If encoder estimation should be used
-//#define ENCODER_SPEED_ESTIMATION
+#define ENCODER_SPEED_ESTIMATION
 #ifdef ENCODER_SPEED_ESTIMATION
     #define SPD_EST_MIN_INTERVAL 500 // The minimum sampling interval (us). Increase to get more steady readings at the cost of latency
 #endif
@@ -109,7 +110,7 @@
     #define STATIC_RMS_CURRENT     (uint16_t)500 // This is the rating of the motor from the manufacturer
 
     // Overtemperature protection (lowers motor current when motor temperature rises too high)
-    #define ENABLE_OVERTEMP_PROTECTION
+    //#define ENABLE_OVERTEMP_PROTECTION
     #ifdef ENABLE_OVERTEMP_PROTECTION
         #define OVERTEMP_THRESHOLD_TEMP      70 // The temp to trigger a overtemp current reduction (C)
         #define OVERTEMP_INCREMENT           50 // The increment at which to reduce the current by (RMS mA)

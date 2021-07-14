@@ -34,12 +34,40 @@ StepperMotor::StepperMotor() {
 }
 
 
-// Returns the current RPM of the motor to two decimal places
-float StepperMotor::getMotorRPM() {
+// Returns the current RPM of the encoder
+float StepperMotor::getEncoderRPM() {
 
-    // Convert getEncoderSpeed() (in deg/s) to RPM
-    return (encoder.getSpeed() * 60 / 360);
+    // Convert getSpeed() (in deg/s) to RPM
+    return DPS_TO_RPM(encoder.getSpeed());
 }
+
+
+// Returns the current calculated RPM
+float StepperMotor::getEstimRPM() {
+
+    // Convert getEstimSpeed() (in deg/s) to RPM
+    return DPS_TO_RPM(encoder.getEstimSpeed());
+}
+
+
+#ifdef ENABLE_STEPPING_VELOCITY
+// Compute the stepping interface velocity in deg/s
+float StepperMotor::getDegreesPS() {
+    calc:
+    while (isStepping)
+        ;
+    float velocity = 1000000.0 * angleChange / (nowStepingSampleTime - prevStepingSampleTime);
+    if (isStepping)
+        goto calc;
+    return velocity;
+}
+
+
+// Compute the stepping interface RPM
+float  StepperMotor::getSteppingRPM() {
+    return DPS_TO_RPM(getDegreesPS());
+}
+#endif
 
 
 // Returns the angular deviation of the motor from the desired angle
@@ -345,35 +373,9 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
 }
 
 
-#ifdef ENABLE_STEPPING_VELOCITY
-// Compute the stepping interface velocity in deg/s
-float StepperMotor::getDegreesPS() {
-    calc:
-    while (isStepping)
-        ;
-    float velocity = 1000000.0 * angleChange / (nowStepingSampleTime - prevStepingSampleTime);
-    if (isStepping)
-        goto calc;
-    return velocity;
-}
-
-
-// Compute the stepping interface velocity in RPM
-float  StepperMotor::getRPM() {
-    return getDegreesPS() * 60 / 360;
-}
-#endif
-/*
-#define to360(A) \
-    do { \
-        ((A) - DIRECTION(A) * abs(A) / 360) * 360)
-    } while(0)
-*/
-#define to360(A) ((A) - DIRECTION(A) * round(abs(A) / 360) * 360)
-
 // Sets the coils of the motor based on the step count
 void StepperMotor::driveCoils(int32_t steps) {
-
+/*
     __enable_irq();
     //Serial.println("steps:" +String(steps) + " getRawStepsAvg():" + String(encoder.getRawStepsAvg()) + " getRawSteps():" + String(encoder.getRawSteps()));
 
@@ -383,7 +385,7 @@ void StepperMotor::driveCoils(int32_t steps) {
     Serial.println("sub:" + String(sub) + " microstepAngle:" + String(microstepAngle));
     if (sub >= microstepAngle/4)
         Serial.println("aaaaaaa");
-
+*/
     // Correct the steps so that they're within the valid range
     //steps %= (4 * (this -> microstepDivisor));
 

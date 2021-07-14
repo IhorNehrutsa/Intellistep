@@ -213,12 +213,14 @@ void displayMotorData() {
     // RPM of the motor (RPM is capped at 2 decimal places)
     #ifdef ENCODER_SPEED_ESTIMATION
         // Check if the motor RPM can be updated. The update rate of the speed must be limited while using encoder speed estimation
-        if (motor.encoder.sampleTimeExceeded())
-    #endif // ! ENCODER_SPEED_ESTIMATION
-        {
-            snprintf(outBuffer, OB_SIZE, "RPM: %10.2f", motor.getMotorRPM());
+        if (motor.encoder.sampleTimeExceeded()) {
+            snprintf(outBuffer, OB_SIZE, "iRPM: %9.3f", motor.getEstimRPM());
             writeOLEDString(0, 0, outBuffer, false);
         }
+    #else
+        snprintf(outBuffer, OB_SIZE, "RPM: %10.2f", motor.getEncoderRPM());
+        writeOLEDString(0, 0, outBuffer, false);
+    #endif // ! ENCODER_SPEED_ESTIMATION
 /*
     // Angle error
     snprintf(outBuffer, OB_SIZE, "Err: % 010.2f", motor.getAngleError());
@@ -233,19 +235,39 @@ void displayMotorData() {
     /writeOLEDString(0, LINE_HEIGHT * 3, outBuffer, true);
 */
 
+    //snprintf(outBuffer, OB_SIZE, "RAngl: %7d", motor.encoder.getRawIncrements());
+    //writeOLEDString(0, LINE_HEIGHT * 1, outBuffer, true);
 
-    #ifndef ENCODER_SPEED_ESTIMATION
-        snprintf(outBuffer, OB_SIZE, "RSP: %10d", motor.encoder.getRawSpeed());
-        writeOLEDString(0, LINE_HEIGHT * 1, outBuffer, true);
-    #endif
-
-    snprintf(outBuffer, OB_SIZE, "RTemp: %7d", motor.encoder.getRawTemp());
-    writeOLEDString(0, LINE_HEIGHT * 2, outBuffer, true);
+    snprintf(outBuffer, OB_SIZE, "eRPM: %9.3f", motor.getEncoderRPM());
+    writeOLEDString(0, LINE_HEIGHT * 1, outBuffer, false);
 
     #ifdef ENABLE_STEPPING_VELOCITY
-        snprintf(outBuffer, OB_SIZE, "PPM: %10.2f", motor.getRPM());
-        writeOLEDString(0, LINE_HEIGHT * 3, outBuffer, true);
+        snprintf(outBuffer, OB_SIZE, "sRPM: %9.3f", motor.getSteppingRPM());
+        writeOLEDString(0, LINE_HEIGHT * 2, outBuffer, true);
     #endif
+
+    #ifndef ENCODER_SPEED_ESTIMATION
+        snprintf(outBuffer, OB_SIZE, "RSped: %7d", motor.encoder.getRawSpeed());
+        writeOLEDString(0, LINE_HEIGHT * 2, outBuffer, true);
+
+        //int16_t i = motor.encoder.getRawSpeed();
+        //Serial.println("getRawSpeed():" + String(i) + " " + String(i>>1) + " " + String(i>>2) + " " + String(i>>3) + " " + String(i>>4));
+    #endif
+    //
+    snprintf(outBuffer, OB_SIZE, "Speed: %7.2f", motor.encoder.getSpeed());
+    writeOLEDString(0, LINE_HEIGHT * 3, outBuffer, true);
+
+/*
+    snprintf(outBuffer, OB_SIZE, "RTemp: %7d", motor.encoder.getRawTemp());
+    writeOLEDString(0, LINE_HEIGHT * 2, outBuffer, true);
+    //
+    int16_t i = motor.encoder.getRawTemp();
+    Serial.println("getRawTemp():" + String(i) + " " + String(i>>1) + " " + String(i>>2) + " " + String(i>>3) + " " + String(i>>4));
+    //
+    // Temp of the encoder (close to the motor temp)
+    snprintf(outBuffer, OB_SIZE, "Temp: %7.1f C", motor.encoder.getTemp());
+    writeOLEDString(0, LINE_HEIGHT * 3, outBuffer, true);
+*/
 }
 
 
