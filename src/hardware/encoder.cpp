@@ -796,12 +796,12 @@ int16_t Encoder::getRawRev() {
     // Loop continuously until there is no error
     while (readRegister(ENCODER_ANGLE_REV_REG, (uint16_t &)rawData) != NO_ERROR);
 
-    // Delete everything before the 14 LSB's
-    rawData <<= 1;
+    // Delete everything before the 9 LSB's
+    rawData <<= 7;
 
-    // If bit 14 is set, the value is negative
+    // If bit 8 is set, the value is negative
     // Propagate sign of integer
-    rawData >>= 1;
+    rawData >>= 7;
 
     // Return the angle measurement
     return rawData;
@@ -809,7 +809,7 @@ int16_t Encoder::getRawRev() {
 
 
 // Gets the revolutions of the motor
-double Encoder::getRev() {
+int32_t Encoder::getRev() {
 
     // Get the raw value
     int16_t rawRevNow = getRawRev();
@@ -818,7 +818,7 @@ double Encoder::getRev() {
     else if ((lastRawRev < 0) && (rawRevNow > 0)) // borrow
         revolutions--;
     lastRawRev = rawRevNow;
-    return ((double)revolutions * 512 + rawRevNow - startupRevOffset);
+    return (revolutions * 512 + rawRevNow - startupRevOffset);
 }
 
 

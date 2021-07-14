@@ -89,19 +89,19 @@ void setupMotorTimers() {
     // Attach the interupt to the step pin (subpriority is set in Platformio config file)
     // A normal step pin triggers on the rising edge. However, as explained here: https://github.com/CAP1Sup/Intellistep/pull/50#discussion_r663051004
     // the optocoupler inverts the signal. Therefore, the falling edge is the correct value.
-    attachInterrupt(digitalPinToInterrupt(STEP_PIN), stepMotor, FALLING); // input is pull-upped to VDD
+    attachInterrupt(STEP_PIN, stepMotor, FALLING); // input is pull-upped to VDD
 
     #ifdef ENABLE_CORRECTION_TIMER
-        // Setup the timer for steps
-        correctionTimer -> pause();
-        correctionTimer -> setInterruptPriority(7, 1);
-        correctionTimer -> setMode(1, TIMER_OUTPUT_COMPARE); // Disables the output, since we only need the timed interrupt
-        correctionTimer -> setOverflow(round(STEP_UPDATE_FREQ * motor.getMicrostepping()), HERTZ_FORMAT);
-        #ifndef CHECK_STEPPING_RATE
-            correctionTimer -> attachInterrupt(correctMotor);
-        #endif
-        correctionTimer -> refresh();
-        correctionTimer -> resume();
+    // Setup the timer for steps
+    correctionTimer -> pause();
+    correctionTimer -> setInterruptPriority(7, 1);
+    correctionTimer -> setMode(1, TIMER_OUTPUT_COMPARE); // Disables the output, since we only need the timed interrupt
+    correctionTimer -> setOverflow(round(STEP_UPDATE_FREQ * motor.getMicrostepping()), HERTZ_FORMAT);
+    #ifndef CHECK_STEPPING_RATE
+        correctionTimer -> attachInterrupt(correctMotor);
+    #endif
+    correctionTimer -> refresh();
+    correctionTimer -> resume();
     #endif
 
     // Setup the PID timer if it is enabled
@@ -136,7 +136,7 @@ void disableMotorTimers() {
 
     // Disable the correctional timer
     #ifdef ENABLE_CORRECTION_TIMER
-        correctionTimer -> pause();
+    correctionTimer -> pause();
     #endif
 
     // Disable the PID move timer if PID is enabled
@@ -159,7 +159,7 @@ void enableMotorTimers() {
 
     // Enable the correctional timer
     #ifdef ENABLE_CORRECTION_TIMER
-        correctionTimer -> resume();
+    correctionTimer -> resume();
     #endif
 
     // Enable the PID move timer if PID is enabled
@@ -206,7 +206,7 @@ void enableStepCorrection() {
     // Enable the timer if it isn't already, then set the variable
     if (!stepCorrection) {
         #ifdef ENABLE_CORRECTION_TIMER
-            correctionTimer -> resume();
+        correctionTimer -> resume();
         #endif
         stepCorrection = true;
     }
@@ -219,7 +219,7 @@ void disableStepCorrection() {
     // Disable the timer if it isn't already, then set the variable
     if (stepCorrection) {
         #ifdef ENABLE_CORRECTION_TIMER
-            correctionTimer -> pause();
+        correctionTimer -> pause();
         #endif
 
         // Disable the PID correction timer if needed
@@ -236,13 +236,13 @@ void disableStepCorrection() {
 void updateCorrectionTimer() {
 
     #ifdef ENABLE_CORRECTION_TIMER
-        // Check the previous value of the timer, only changing if it is different
-        if (correctionTimer -> getCount(HERTZ_FORMAT) != round(STEP_UPDATE_FREQ * motor.getMicrostepping())) {
-            correctionTimer -> pause();
-            correctionTimer -> setOverflow(round(STEP_UPDATE_FREQ * motor.getMicrostepping()), HERTZ_FORMAT);
-            correctionTimer -> refresh();
-            correctionTimer -> resume();
-        }
+    // Check the previous value of the timer, only changing if it is different
+    if (correctionTimer -> getCount(HERTZ_FORMAT) != round(STEP_UPDATE_FREQ * motor.getMicrostepping())) {
+        correctionTimer -> pause();
+        correctionTimer -> setOverflow(round(STEP_UPDATE_FREQ * motor.getMicrostepping()), HERTZ_FORMAT);
+        correctionTimer -> refresh();
+        correctionTimer -> resume();
+    }
     #endif
 }
 
