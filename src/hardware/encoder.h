@@ -309,6 +309,7 @@ class Encoder {
         double getAbsoluteAngleAvg();
         float getAbsoluteAngleAvgFloat();
         void setStepOffset(double offset);
+        void setIncrementsOffset(uint16_t offset);
         void zero();
 
         // Encoder estimation
@@ -342,6 +343,7 @@ class Encoder {
         double startupAngleOffset = 0;
         double startupRevOffset = 0;
         double encoderStepOffset = 0;
+        uint16_t encoderIncrementsOffset = 0;
 
         // SPI init structure
         SPI_HandleTypeDef spiConfig;

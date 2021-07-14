@@ -206,6 +206,28 @@ void StepperMotor::setMicrostepping(uint16_t setMicrostepping) {
 
         // Fix the microsteps per rotation
         this -> microstepsPerRotation = round(360.0 / microstepAngle);
+
+        switch (this -> microstepDivisor) {
+        case 32:
+            this -> microstepMultiplier = 1;
+            break;
+        case 16:
+            this -> microstepMultiplier = 2;
+            break;
+        case 8:
+            this -> microstepMultiplier = 4;
+            break;
+        case 4:
+            this -> microstepMultiplier = 8;
+            break;
+        case 2:
+            this -> microstepMultiplier = 16;
+            break;
+        default:
+            this -> microstepMultiplier = 32;
+            break;
+        }
+        //this -> microstepMultiplier *= 4*8;
     }
 }
 
@@ -315,6 +337,9 @@ void StepperMotor::simpleStep() {
 // Computes the coil values for the next step position and increments the set angle
 void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos) {
 
+    //__enable_irq();
+    //Serial.println("microstepAngle:" +String(microstepAngle) + " fullStepAngle:" + String(fullStepAngle) + " microstepDivisor:" + String(microstepDivisor) + " microstepMultiplier:" + String(microstepMultiplier));
+
     #ifdef ENABLE_STEPPING_VELOCITY
         isStepping = true;
 
@@ -327,19 +352,21 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
     #endif
     // Main angle change (any inversions * angle of microstep)
     angleChange = this -> microstepAngle;
-    int32_t stepChange = 1;
-
+    int32_t stepChange = this -> microstepMultiplier;
+/*
     // Factor in the multiplier if specified
     if (useMultiplier) {
         angleChange *= (this -> microstepMultiplier);
         stepChange *= (this -> microstepMultiplier);
     }
-
+*/
     // Invert the change based on the direction
     if (dir == PIN) {
 
         // Use the DIR_PIN state
-        angleChange *= DIRECTION(GPIO_READ(DIRECTION_PIN)) * (this -> reversed);
+        int8_t dirNow = DIRECTION(GPIO_READ(DIRECTION_PIN)) * (this -> reversed);
+        angleChange *= dirNow;
+        stepChange *= dirNow;
     }
     //else if (dir == COUNTER_CLOCKWISE) {
         // Nothing to do here, the value is already positive
@@ -347,6 +374,7 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
     else if (dir == CLOCKWISE) {
         // Make the angle change in the negative direction
         angleChange = -angleChange;
+        stepChange = -stepChange;
     }
 
     #ifdef ENABLE_STEPPING_VELOCITY
@@ -354,7 +382,7 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
     #endif
 
     // Fix the step change's sign
-    stepChange *= getSign(angleChange);
+    //stepChange *= getSign(angleChange);
 
     // Update the desired angle if specified
     if (updateDesiredPos) {
@@ -375,10 +403,10 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
 
 // Sets the coils of the motor based on the step count
 void StepperMotor::driveCoils(int32_t steps) {
-/*
-    __enable_irq();
-    //Serial.println("steps:" +String(steps) + " getRawStepsAvg():" + String(encoder.getRawStepsAvg()) + " getRawSteps():" + String(encoder.getRawSteps()));
 
+//    __enable_irq();
+    //Serial.println("steps:" +String(steps) + " getRawStepsAvg():" + String(encoder.getRawStepsAvg()) + " getRawSteps():" + String(encoder.getRawSteps()));
+/*
     double sub = to360(currentAngle);
     Serial.println("currentAngle:" + String(currentAngle) + "sub:" + String(sub));
     sub -= encoder.getRawAngleAvg();
@@ -391,6 +419,8 @@ void StepperMotor::driveCoils(int32_t steps) {
 
     // Calculate the sine and cosine of the angle
     uint16_t arrayIndex = steps & (SINE_VAL_COUNT - 1);
+
+//    Serial.println("steps:" +String(steps) + " arrayIndex:" + String(arrayIndex) + " getRawIncrementsAvg():" + String(encoder.getRawIncrementsAvg()));
 
     // Calculate the coil settings
     int16_t coilAPercent = fastSin(arrayIndex);
@@ -469,11 +499,11 @@ void StepperMotor::driveCoilsAngle(float degAngle) {
     }
 
     // Convert the angle to microstep values (formula uses degAngle * full steps for rotation * microsteps)
-    float microstepAngle = (degAngle / this -> fullStepAngle) * (this -> microstepDivisor);
+    float _microstepAngle = (degAngle / this -> fullStepAngle) * (this -> microstepDivisor);
 
     // Round the microstep angle, it has to be a whole value of the number of microsteps available
     // Also ensures that the coils are being driven to the major step positions (increases torque)
-    uint16_t roundedMicrosteps = round(microstepAngle);
+    uint16_t roundedMicrosteps = round(_microstepAngle);
 
     // Drive the coils to the found microstep
     driveCoils(roundedMicrosteps);

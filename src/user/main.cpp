@@ -70,7 +70,7 @@ void setup() {
 
     // Setup the motor for use
     motor.setState(DISABLED, true);
-    motor.setMicrostepping(1);
+    //motor.setMicrostepping(1);
     //motor.setDesiredAngle(100);
 
     // Only run if the OLED is enabled
@@ -139,7 +139,7 @@ void setup() {
     //writeOLEDString(0, 0, "Close Loop Mode");
 
     // Check if the board is calibrated. Need to force calibration if the board isn't calibrated
-    if (0 && !isCalibrated()) {
+    if (!isCalibrated()) {
 
         // Only display to screen if the screen is enabled
         #ifdef ENABLE_OLED
@@ -224,6 +224,11 @@ void setup() {
         // Setup the motor timers and interrupts
         setupMotorTimers();
     }
+
+    motor.setFullStepAngle(1.8);
+    motor.setMicrostepping(1);
+
+//    motor.encoder.setIncrementsOffset(motor.encoder.getRawIncrementsAvg());
 }
 
 
@@ -235,7 +240,7 @@ void loop() {
     //Serial.println("P:" + String(pid.compute()) + " DA:" + String(motor.getDesiredAngle()) + " AA:" + String(getAbsoluteAngle()));
 
     // Check the dip switches
-    checkDips();
+    //checkDips();
 
     // Check to see if serial data is available to read
     #ifdef ENABLE_SERIAL

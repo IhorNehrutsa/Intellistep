@@ -231,9 +231,11 @@ void displayMotorData() {
     writeOLEDString(0, LINE_HEIGHT * 2, outBuffer, false);
 
     // Temp of the encoder (close to the motor temp)
-    /snprintf(outBuffer, OB_SIZE, "Temp: %7.1f C", motor.encoder.getTemp());
-    /writeOLEDString(0, LINE_HEIGHT * 3, outBuffer, true);
+    snprintf(outBuffer, OB_SIZE, "Temp: %7.1f C", motor.encoder.getTemp());
+    writeOLEDString(0, LINE_HEIGHT * 3, outBuffer, true);
 */
+
+
 
     //snprintf(outBuffer, OB_SIZE, "RAngl: %7d", motor.encoder.getRawIncrements());
     //writeOLEDString(0, LINE_HEIGHT * 1, outBuffer, true);
@@ -254,13 +256,13 @@ void displayMotorData() {
         //Serial.println("getRawSpeed():" + String(i) + " " + String(i>>1) + " " + String(i>>2) + " " + String(i>>3) + " " + String(i>>4));
     #endif
     //
-    snprintf(outBuffer, OB_SIZE, "Speed: %7.2f", motor.encoder.getSpeed());
-    writeOLEDString(0, LINE_HEIGHT * 3, outBuffer, true);
+//    snprintf(outBuffer, OB_SIZE, "Speed: %7.2f", motor.encoder.getSpeed());
+//    writeOLEDString(0, LINE_HEIGHT * 3, outBuffer, true);
 
-/*
+
     snprintf(outBuffer, OB_SIZE, "RTemp: %7d", motor.encoder.getRawTemp());
-    writeOLEDString(0, LINE_HEIGHT * 2, outBuffer, true);
-    //
+    writeOLEDString(0, LINE_HEIGHT * 3, outBuffer, true);
+/*    //
     int16_t i = motor.encoder.getRawTemp();
     Serial.println("getRawTemp():" + String(i) + " " + String(i>>1) + " " + String(i>>2) + " " + String(i>>3) + " " + String(i>>4));
     //

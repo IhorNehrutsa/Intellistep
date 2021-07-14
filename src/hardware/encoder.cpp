@@ -508,7 +508,7 @@ uint16_t Encoder::getRawIncrementsAvg() {
     incrementAvg.add(rawData);
 
     // Return the average
-    return incrementAvg.get();
+    return incrementAvg.get() - encoderIncrementsOffset;
 }
 
 
@@ -859,6 +859,12 @@ float Encoder::getAbsoluteAngleAvgFloat() {
 // Sets the encoder's step offset (used for calibration)
 void Encoder::setStepOffset(double offset) {
     encoderStepOffset = offset;
+}
+
+
+// Sets the encoder's Increments
+void Encoder::setIncrementsOffset(uint16_t offset) {
+    encoderIncrementsOffset = offset;
 }
 
 

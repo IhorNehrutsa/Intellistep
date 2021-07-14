@@ -72,7 +72,7 @@
 #define STRING_END_MARKER '>'
 
 // CAN settings
-#define ENABLE_CAN
+//#define ENABLE_CAN
 #ifdef ENABLE_CAN
     // The CAN ID of this board
     // X:2, X2:3...
@@ -110,7 +110,7 @@
     #define STATIC_RMS_CURRENT     (uint16_t)500 // This is the rating of the motor from the manufacturer
 
     // Overtemperature protection (lowers motor current when motor temperature rises too high)
-    //#define ENABLE_OVERTEMP_PROTECTION
+    #define ENABLE_OVERTEMP_PROTECTION
     #ifdef ENABLE_OVERTEMP_PROTECTION
         #define OVERTEMP_THRESHOLD_TEMP      70 // The temp to trigger a overtemp current reduction (C)
         #define OVERTEMP_INCREMENT           50 // The increment at which to reduce the current by (RMS mA)
@@ -154,7 +154,7 @@
 // Motor settings
 // The number of microsteps to move per step pulse
 // Doesn't affect correctional movements
-#define MICROSTEP_MULTIPLIER    (uint32_t)1
+#define MICROSTEP_MULTIPLIER    (uint32_t)32
 
 // The min/max microstepping divisors
 // Microstepping divisors are the numbers underneath the fraction of the microstepping
