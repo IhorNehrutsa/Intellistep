@@ -59,7 +59,7 @@
 #define STRING_END_MARKER '>'
 
 // CAN settings
-//#define ENABLE_CAN
+#define ENABLE_CAN
 #ifdef ENABLE_CAN
     // The CAN ID of this board
     // X:2, X2:3...
