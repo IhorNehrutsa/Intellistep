@@ -6,6 +6,7 @@
 #include "HardwareTimer.h"
 #include "encoder.h"
 #include "fastAnalogWrite.h"
+#include "stm32f1xx_hal_tim.h"
 
 // For sin() and fmod() function
 //#include "cmath"
@@ -14,6 +15,9 @@
 
 // Import the pin mapping
 #include "config.h"
+
+// Maximum value for timer counters
+#define TIM_MAX_VALUE (uint16_t)65535
 
 // Enumeration for coil states
 typedef enum {
@@ -239,10 +243,10 @@ class StepperMotor {
         float fullStepAngle = 1.8;
 
         // Microstep angle (full step / microstepping divisor)
-        float microstepAngle = 1.8;
+        float microstepAngle = getFullStepAngle() / getMicrostepping();
 
         // Microstep count in a full rotation
-        int32_t microstepsPerRotation = (360.0 / getFullStepAngle());
+        int32_t microstepsPerRotation = (360.0 / getMicrostepAngle());
 
         // If the motor is enabled or not (saves time so that the enable and disable pins are only set once)
         MOTOR_STATE state = MOTOR_NOT_SET;

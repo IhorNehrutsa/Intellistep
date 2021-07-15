@@ -195,7 +195,7 @@ Encoder::Encoder() {
 errorTypes Encoder::readRegister(uint16_t registerAddress, uint16_t &data) {
 
     // Disable interrupts
-    disableInterrupts();
+//    disableInterrupts();
 
     // Create an accumulator for error checking
     errorTypes error = NO_ERROR;
@@ -250,7 +250,7 @@ errorTypes Encoder::readRegister(uint16_t registerAddress, uint16_t &data) {
     }
 
     // All done, we can re-enable interrupts
-    enableInterrupts();
+//    enableInterrupts();
 
     // Return error
     return error;
@@ -499,6 +499,9 @@ uint16_t Encoder::getRawIncrements() {
     // Loop until a valid reading
     while (readRegister(ENCODER_ANGLE_REG, rawData) != NO_ERROR);
 
+    //__enable_irq();
+    //Serial.println("rawData:" + String(rawData));
+
     // Delete the first bit, saving the last 15
     return rawData & DELETE_BIT_15;
 }
@@ -514,7 +517,7 @@ uint16_t Encoder::getRawIncrementsAvg() {
     incrementAvg.add(rawData);
 
     // Return the average
-    return incrementAvg.get() - encoderIncrementsOffset;
+    return incrementAvg.get();// - encoderIncrementsOffset;
 }
 
 

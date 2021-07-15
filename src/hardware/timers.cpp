@@ -6,9 +6,9 @@
 
 // Timer uses:
 // - TIM1 - Used to time correction calculations
-// - TIM2 - Used to time PID steps
-//// - TIM3 - Used to generate PWM signal for motor
-// - TIM4 - Used to directly step the motor
+// - TIM2 - Used to count steps (stores master record of steps)
+// - TIM3 - Used to generate PWM signal for motor
+// - TIM4 - Used to schedule steps for the motor (used by PID and direct stepping)
 
 #ifdef ENABLE_CORRECTION_TIMER
 // Create a new timer instance

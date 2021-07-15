@@ -109,7 +109,7 @@
 
 // PID settings
 // ! At this time, this feature is still under development
-//#define ENABLE_PID
+#define ENABLE_PID
 #ifdef ENABLE_PID
 
     // Default P, I, and D terms
@@ -131,7 +131,7 @@
 #endif
 
 // Direct step functionality (used to command motor to move over Serial/CAN)
-//#define ENABLE_DIRECT_STEPPING
+#define ENABLE_DIRECT_STEPPING
 #ifdef ENABLE_DIRECT_STEPPING
 
     // The default stepping rate (in Hz) to move in the event that no parameter is specified
@@ -349,13 +349,13 @@
 
 // --------------  Debugging  --------------
 
-//#define ENABLE_CORRECTION_TIMER
+#define ENABLE_CORRECTION_TIMER
 #define ENABLE_STEPPING_VELOCITY
 #define IGNORE_FLASH_VERSION
 
 // LED related debugging
 #ifdef ENABLE_LED
-    //#define CHECK_STEPPING_RATE
+    #define CHECK_STEPPING_RATE
     //#define CHECK_CORRECT_MOTOR_RATE
     //#define CHECK_ENCODER_SPEED
 #endif
