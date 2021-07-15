@@ -395,7 +395,7 @@ String parseCommand(String buffer) {
             case 6: {
                 // G6 (ex G6 D0 R1000 S1000) - Direct stepping, commands the motor to move a specified number of steps in the specified direction. D is direction (0 for CCW, 1 for CW), R is rate (in Hz), and S is the count of steps to move
                 // Pull the values from the command
-                bool reverse = parseValue(buffer, 'D').compareTo("1");
+                bool reverse = parseValue(buffer, 'D').equals("1");
                 int32_t rate = parseValue(buffer, 'R').toInt();
                 int64_t count = parseValue(buffer, 'S').toInt();
 

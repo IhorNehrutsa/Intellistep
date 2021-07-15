@@ -51,7 +51,7 @@ static uint8_t interruptBlockCount = 0;
 
 
 // Setup everything related to step scheduling
-#ifdef ENABLE_DIRECT_STEPPING
+#if (defined(ENABLE_DIRECT_STEPPING) || defined(ENABLE_PID))
 
     // Main timer for scheduling steps
     HardwareTimer *stepScheduleTimer = new HardwareTimer(TIM4);
@@ -61,6 +61,13 @@ static uint8_t interruptBlockCount = 0;
 
     // Remaining step count
     int64_t remainingScheduledSteps = 0;
+
+    // Stores if the timer is enabled
+    // Saves large amounts of cycles as the timer only has to be toggled on a change
+    bool stepScheduleTimerEnabled = false;
+
+    // Stores if the timer should decrement the number of steps left
+    bool decrementRemainingSteps = false;
 #endif
 
 // Tiny little function, just gets the time that the current program has been running
@@ -72,10 +79,10 @@ uint32_t sec() {
 void setupMotorTimers() {
 
     // Interupts are in order of importance as follows -
+    // - 5 - hardware step counter overflow handling
     // - 6 - step pin change
-    // - 7.0 - scheduled steps (if ENABLE_DIRECT_STEPPING)
-    // - 7.1 - position correction (or PID interval update)
-    // - 7.2 - PID correctional movement
+    // - 7.0 - position correction (or PID interval update)
+    // - 7.1 - scheduled steps (if ENABLE_DIRECT_STEPPING or ENABLE_PID)
 
     // Check if StallFault is enabled
     #ifdef ENABLE_STALLFAULT
@@ -86,7 +93,7 @@ void setupMotorTimers() {
         #endif
     #endif
 
-    // Attach the interupt to the step pin (subpriority is set in Platformio config file)
+    // Attach the interupt to the step pin (subpriority is set in PlatformIO config file)
     // A normal step pin triggers on the rising edge. However, as explained here: https://github.com/CAP1Sup/Intellistep/pull/50#discussion_r663051004
     // the optocoupler inverts the signal. Therefore, the falling edge is the correct value.
     attachInterrupt(STEP_PIN, stepMotor, FALLING); // input is pull-upped to VDD
@@ -116,13 +123,12 @@ void setupMotorTimers() {
     #endif
 
     // Setup step schedule timer if it is enabled
-    #ifdef ENABLE_DIRECT_STEPPING
+    #if (defined(ENABLE_DIRECT_STEPPING) || defined(ENABLE_PID))
         stepScheduleTimer -> pause();
-        stepScheduleTimer -> setInterruptPriority(7, 0);
+        stepScheduleTimer -> setInterruptPriority(7, 1);
         stepScheduleTimer -> setMode(1, TIMER_OUTPUT_COMPARE); // Disables the output, since we only need the timed interrupt
         stepScheduleTimer -> attachInterrupt(stepScheduleHandler);
         stepScheduleTimer -> refresh();
-        stepScheduleTimer -> pause();
         // Don't re-enable the motor, that will be done when the steps are scheduled
     #endif
 }
@@ -144,8 +150,8 @@ void disableMotorTimers() {
         pidMoveTimer -> pause();
     #endif
 
-    // Disable the direct stepping timer if it is enabled
-    #ifdef ENABLE_DIRECT_STEPPING
+    // Disable the stepping timer if it is enabled
+    #if (defined(ENABLE_DIRECT_STEPPING) || defined(ENABLE_PID))
         stepScheduleTimer -> pause();
     #endif
 }
@@ -180,6 +186,7 @@ void disableInterrupts() {
     // Disable the interrupts if this is the first block
     if (interruptBlockCount == 0) {
         __disable_irq();
+        syncInstructions();
     }
 
    // Add one to the interrupt block counter
@@ -196,6 +203,7 @@ void enableInterrupts() {
     // If all of the blocks are gone, then re-enable the interrupts
     if (interruptBlockCount == 0) {
         __enable_irq();
+        syncInstructions();
     }
 }
 
@@ -209,6 +217,7 @@ void enableStepCorrection() {
         correctionTimer -> resume();
         #endif
         stepCorrection = true;
+        syncInstructions();
     }
 }
 
@@ -216,8 +225,9 @@ void enableStepCorrection() {
 // Disables the step correction timer
 void disableStepCorrection() {
 
-    // Disable the timer if it isn't already, then set the variable
+    // Check if the timer is disabled
     if (stepCorrection) {
+
         #ifdef ENABLE_CORRECTION_TIMER
         correctionTimer -> pause();
         #endif
@@ -227,8 +237,15 @@ void disableStepCorrection() {
             pidMoveTimer -> pause();
         #endif
 
+        // Set that there will be no more step correction
         stepCorrection = false;
+        syncInstructions();
     }
+
+    // Disable the stepping timer if needed
+    #if (defined(ENABLE_DIRECT_STEPPING) || defined(ENABLE_PID))
+    disableStepScheduleTimer();
+    #endif
 }
 
 
@@ -249,10 +266,14 @@ void updateCorrectionTimer() {
 
 // Just a simple stepping function. Interrupt functions can't be instance methods
 void stepMotor() {
+
     #ifdef CHECK_STEPPING_RATE
         GPIO_WRITE(LED_PIN, HIGH);
     #endif
+
+    // Step the motor
     motor.step();
+
     #ifdef CHECK_STEPPING_RATE
         GPIO_WRITE(LED_PIN, LOW);
     #endif
@@ -515,3 +536,12 @@ void stepScheduleHandler() {
     }
 }
 #endif // ! ENABLE_DIRECT_STEPPING
+
+
+// Makes sure that all cached calls respect the current config
+void syncInstructions() {
+
+    // Make sure that the instruction cache is synced
+    __DSB();
+    __ISB();
+}

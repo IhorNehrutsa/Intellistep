@@ -595,23 +595,7 @@ bool Encoder::sampleTimeExceeded() {
 #endif
 
 int16_t Encoder::getRawSpeed() {
-#if 0
-    // Prepare the variables to store data in
-	uint16_t rawData;
 
-    // Read the encoder
-    while (readRegister(ENCODER_SPEED_REG, rawData) != NO_ERROR);
-
-    // Get raw speed reading
-    rawData &= DELETE_BIT_15;
-
-    // If bit 14 is set, the value is negative
-    if (rawData & CHECK_BIT_14) {
-        rawData -= CHANGE_UINT_TO_INT_15;
-    }
-
-    return (int16_t)rawData;
-#else
     // Prepare the variables to store data in
 	int16_t rawData;
 
@@ -626,7 +610,6 @@ int16_t Encoder::getRawSpeed() {
     rawData >>= 1;
 
     return rawData;
-#endif
 }
 
 // Reads the speed of the encoder in deg/s
@@ -640,21 +623,13 @@ double Encoder::getSpeed() {
 
 	// Get raw speed reading
 	int16_t rawSpeed = rawData[0];
-    #if 0
-        rawSpeed = rawSpeed & DELETE_BIT_15;
 
-        // If bit 14 is set, the value is negative
-        if (rawSpeed & CHECK_BIT_14) {
-            rawSpeed -= CHANGE_UINT_TO_INT_15;
-        }
-    #else
         // Delete everything before the 14 LSB's
         rawSpeed <<= 1;
 
         // If bit 14 is set, the value is negative
         // Propagate sign of integer
         rawSpeed >>= 1;
-    #endif
 
 	// Get FIR_MD from bits 15 and 16 of register 0x06
 	uint16_t firMD = rawData[3] >> 14;
@@ -796,6 +771,7 @@ int16_t Encoder::getRawRev() {
     // Loop continuously until there is no error
     while (readRegister(ENCODER_ANGLE_REV_REG, (uint16_t &)rawData) != NO_ERROR);
 
+    // Delete the first 7 bits, they are not needed
     // Delete everything before the 9 LSB's
     rawData <<= 7;
 

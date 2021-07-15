@@ -57,9 +57,20 @@ void correctMotor();
 #ifdef ENABLE_DIRECT_STEPPING
 // Schedule steps for the motor to execute (rate is in Hz)
 void scheduleSteps(int64_t count, int32_t rate, STEP_DIR stepDir);
+#endif // ! ENABLE_DIRECT_STEPPING
 
+#if (defined(ENABLE_DIRECT_STEPPING) || defined(ENABLE_PID))
 // Step schedule handler (runs when the interrupt is triggered)
 void stepScheduleHandler();
-#endif // ! ENABLE_DIRECT_STEPPING
+
+// Convenience function to handle enabling the step schedule timer
+void enableStepScheduleTimer();
+
+// Convenience function to handle disabling the step schedule timer
+void disableStepScheduleTimer();
+#endif // ! ENABLE_DIRECT_STEPPING || ENABLE_PID
+
+// Makes sure that all cached calls respect the current config
+void syncInstructions();
 
 #endif // ! __TIMERS_H__

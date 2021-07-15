@@ -55,7 +55,7 @@ float StepperMotor::getEstimRPM() {
 float StepperMotor::getDegreesPS() {
     calc:
     while (isStepping)
-        ;
+        ; // wait end of stepping
     float velocity = 1000000.0 * angleChange / (nowStepingSampleTime - prevStepingSampleTime);
     if (isStepping)
         goto calc;
@@ -92,6 +92,7 @@ int32_t StepperMotor::getStepPhase() {
 float StepperMotor::getDesiredAngle() {
     return (this -> desiredAngle);
 }
+
 
 // Returns the desired step of the motor
 int32_t StepperMotor::getDesiredStep() {
