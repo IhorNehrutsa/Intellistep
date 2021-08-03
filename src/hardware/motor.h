@@ -6,6 +6,7 @@
 #include "HardwareTimer.h"
 #include "encoder.h"
 #include "fastAnalogWrite.h"
+#include "GM_code.h"
 #include "stm32f1xx_hal_tim.h"
 
 // For sin() and fmod() function
@@ -224,6 +225,11 @@ class StepperMotor {
         // Counter for number of overflows (needs to be public for the interrupt)
         int32_t stepOverflowOffset = 0;
 
+        // GM_code state machine
+        GM_code gm_code;
+
+        // Motor axis
+        AXES axis = A_AXIS;
 
     // Things that shouldn't be accessed by the outside
     private:

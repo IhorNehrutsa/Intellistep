@@ -116,7 +116,7 @@ typedef float real_t;
 
 //#define ENABLE_STEPPING_VELOCITY
 //#define IGNORE_FLASH_VERSION
-//#define DISABLE_CORRECTION_TIMER
+#define DISABLE_CORRECTION_TIMER
 
 // LED related debugging
 #ifdef ENABLE_LED

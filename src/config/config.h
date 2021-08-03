@@ -115,7 +115,7 @@
 
 // PID settings
 // ! At this time, this feature is still under development
-#define ENABLE_PID
+//#define ENABLE_PID
 #ifdef ENABLE_PID
 
     // Default P, I, and D terms

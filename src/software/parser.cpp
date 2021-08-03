@@ -5,11 +5,16 @@
 #if defined(ENABLE_SERIAL) || defined(ENABLE_CAN)
 
 #include "parser.h"
+#include "GM_code.h"
 
 // Parses an entire string for any commands
 String parseCommand(String buffer) {
 
     // Gcode Table
+    //  - G90 Absolute positioning // http://linuxcnc.org/docs/html/gcode/g-code.html#gcode:g90-g91
+    //  - G91 incremental positioning // http://linuxcnc.org/docs/html/gcode/g-code.html#gcode:g90-g91
+    //  - G0 (ex G0 A123.45) // http://linuxcnc.org/docs/html/gcode/g-code.html#gcode:g0
+    //  - G6 (ex G6 D0 R1000 S1000) - Direct stepping, commands the motor to move a specified number of steps in the specified direction. D is direction (0 for CCW, 1 for CW), R is rate (in Hz), and S is the count of steps to move. Requires `ENABLE_DIRECT_STEPPING`
     //  - M17 (ex M17) - Enables the motor (overrides enable pin)
     //  - M18 / M84 (ex M18 or M84) - Disables the motor (overrides enable pin)
     //  - M93 (ex M93 V1.8 or M93) - Sets the angle of a full step. This value should be 1.8° or 0.9°. If no value is provided, then the current value will be returned.
@@ -416,6 +421,39 @@ String parseCommand(String buffer) {
                 }
 
                 // All good, we can exit
+                return FEEDBACK_OK;
+            }
+
+            case 0: {
+                //  - G0 (ex G0 A123.45) // http://linuxcnc.org/docs/html/gcode/g-code.html#gcode:g0
+                // Pull the values from the command
+                float value = parseValue(buffer, (char)motor.axis).toFloat();
+
+                int32_t rate = DEFAULT_STEPPING_RATE;
+                int32_t count = value / motor.getMicrostepAngle();
+
+                if (motor.gm_code.distance_mode == ABSOLUTE) {
+                    count -= motor.getDesiredStep();
+                }
+
+                STEP_DIR step_dir = COUNTER_CLOCKWISE;
+                if (count < 0.0) {
+                    count = abs(count);
+                    step_dir = CLOCKWISE;
+                }
+
+                scheduleSteps(count, rate, step_dir);
+                return FEEDBACK_OK;
+            }
+
+
+            case 90: {
+                motor.gm_code.distance_mode = ABSOLUTE;
+                return FEEDBACK_OK;
+            }
+
+            case 91: {
+                motor.gm_code.distance_mode = INCREMENTAL;
                 return FEEDBACK_OK;
             }
 
