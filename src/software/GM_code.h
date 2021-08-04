@@ -34,8 +34,10 @@ class GM_code {
         // Keeps the current G code distance_mode
         DISTANCE_MODE distance_mode = ABSOLUTE;
 
+        #ifdef ENABLE_DIRECT_STEPPING
         // Keeps the current G code rate for G6, G0 in Hz
         int32_t rate = DEFAULT_STEPPING_RATE;
+        #endif
 
     private:
 
