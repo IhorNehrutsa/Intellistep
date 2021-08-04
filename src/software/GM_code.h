@@ -1,6 +1,8 @@
 #ifndef _GM_code_H__
 #define _GM_code_H__
 
+#include "config.h"
+
 // Enumeration for G code distance mode
 typedef enum {
     ABSOLUTE = 90,
@@ -31,6 +33,9 @@ class GM_code {
 
         // Keeps the current G code distance_mode
         DISTANCE_MODE distance_mode = ABSOLUTE;
+
+        // Keeps the current G code rate for G6, G0 in Hz
+        int32_t rate = DEFAULT_STEPPING_RATE;
 
     private:
 

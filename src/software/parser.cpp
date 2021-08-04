@@ -406,7 +406,10 @@ String parseCommand(String buffer) {
 
                 // Sanitize the inputs
                 if (rate <= 0) {
-                    rate = DEFAULT_STEPPING_RATE;
+                    rate = motor.gm_code.rate;
+                }
+                else {
+                    motor.gm_code.rate = rate;
                 }
                 if (count <= 0) {
                     return FEEDBACK_NO_VALUE;
@@ -428,8 +431,16 @@ String parseCommand(String buffer) {
                 //  - G0 (ex G0 A123.45) // http://linuxcnc.org/docs/html/gcode/g-code.html#gcode:g0
                 // Pull the values from the command
                 float value = parseValue(buffer, (char)motor.axis).toFloat();
+                int32_t rate = parseValue(buffer, 'R').toInt();
 
-                int32_t rate = DEFAULT_STEPPING_RATE;
+                // Sanitize the inputs
+                if (rate <= 0) {
+                    rate = motor.gm_code.rate;
+                }
+                else {
+                    motor.gm_code.rate = rate;
+                }
+
                 int32_t count = value / motor.getMicrostepAngle();
 
                 if (motor.gm_code.distance_mode == ABSOLUTE) {
