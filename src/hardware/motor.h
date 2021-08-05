@@ -6,7 +6,7 @@
 #include "HardwareTimer.h"
 #include "encoder.h"
 #include "fastAnalogWrite.h"
-#include "GM_code.h"
+#include "planner.h"
 #include "stm32f1xx_hal_tim.h"
 
 // For sin() and fmod() function
@@ -164,6 +164,15 @@ class StepperMotor {
         // Get the microsteps per rotation of the motor
         int32_t getMicrostepsPerRotation() const;
 
+        // Only needed if FULL_MOTION_PLANNER is enabled
+        #ifdef ENABLE_FULL_MOTION_PLANNER
+        // Set the steps per mm of the motor
+        void setStepsPerMM(uint16_t newStepsPerMM);
+
+        // Get the steps per mm of the motor
+        uint16_t getStepsPerMM();
+        #endif // ! ENABLE_FULL_MOTION_PLANNER
+
         // Set if the motor should be reversed
         void setReversed(bool reversed);
 
@@ -225,11 +234,15 @@ class StepperMotor {
         // Counter for number of overflows (needs to be public for the interrupt)
         int32_t stepOverflowOffset = 0;
 
-        // GM_code state machine
-        GM_code gm_code;
+        // Planner (used for motion support)
+        #ifdef ENABLE_FULL_MOTION_PLANNER
+        Planner planner;
+        #endif
 
         // Motor axis
+        #ifdef ENABLE_FULL_MOTION_PLANNER
         AXES axis = A_AXIS;
+        #endif
 
     // Things that shouldn't be accessed by the outside
     private:
@@ -285,6 +298,11 @@ class StepperMotor {
 
         // Microstep count in a full rotation
         int32_t microstepsPerRotation = (360.0 / getMicrostepAngle());
+
+        // Variable to save the steps per mm of the motor (only needed if FULL_MOTION_PLANNER is enabled)
+        #ifdef ENABLE_FULL_MOTION_PLANNER
+        uint16_t stepsPerMM = 0;
+        #endif
 
         // If the motor is enabled or not (saves time so that the enable and disable pins are only set once)
         MOTOR_STATE state = MOTOR_NOT_SET;

@@ -5,7 +5,6 @@
 #if defined(ENABLE_SERIAL) || defined(ENABLE_CAN)
 
 #include "parser.h"
-#include "GM_code.h"
 
 // Parses an entire string for any commands
 String parseCommand(String buffer) {
@@ -398,6 +397,65 @@ String parseCommand(String buffer) {
         // Switch statement the command number
         switch (parseValue(buffer, 'G').toInt()) {
 
+            case 0: {
+                // - G0 (ex G0 A123.45) - Rapid movement at a specified distance. Distance can be in degrees (for axes A, B, C) or in mm (for axes X, Y, Z). Steps/mm must be set for movements using mm units
+                // http://linuxcnc.org/docs/html/gcode/g-code.html#gcode:g0
+                // Pull the values from the command
+                float value = parseValue(buffer, (char)motor.axis).toFloat();
+                int32_t rate = parseValue(buffer, 'R').toInt();
+
+                // Sanitize the inputs
+                if (rate <= 0) {
+                    rate = motor.planner.getLastStepRate();
+                }
+
+                // Save the new rate for next time (needed if the next command doesn't specify rate)
+                motor.planner.setLastStepRate(rate);
+
+                // Determine the number of steps we need to move
+                // Create a count value for number of steps
+                int32_t count;
+
+                // Decide if units are mm or deg based on axis letter
+                if ((char)motor.axis == 'A' || (char)motor.axis == 'B' || (char)motor.axis == 'C') {
+
+                    // Units are degrees
+                    count = round(value / motor.getMicrostepAngle());
+                }
+                else {
+                    // Units must be in mm
+                    // Check to make sure that steps per mm has been set
+                    if (motor.getStepsPerMM() > 0) {
+                        count = round(value * motor.getStepsPerMM());
+                    }
+                    else {
+                        // There is no steps per mm, throw an error
+                        return FEEDBACK_STEPS_PER_MM_NOT_SET;
+                    }
+                }
+
+                // Adjust the count by the current position if the mode is absolute
+                if (motor.planner.getDistanceMode() == ABSOLUTE) {
+                    count -= motor.getDesiredStep();
+                }
+
+                // Default to CCW rotation
+                STEP_DIR dir = COUNTER_CLOCKWISE;
+
+                // If the count is negative (motor needs to move in opposite direction)
+                // then we can make the count positive and fix the direction
+                if (count < 0) {
+                    count = -count;
+                    dir = CLOCKWISE;
+                }
+
+                // Schedule the steps to be moved
+                scheduleSteps(count, rate, dir);
+
+                // Return that everything went well
+                return FEEDBACK_OK;
+            }
+
             case 6: {
                 // G6 (ex G6 D0 R1000 S1000) - Direct stepping, commands the motor to move a specified number of steps in the specified direction. D is direction (0 for CCW, 1 for CW), R is rate (in Hz), and S is the count of steps to move
                 // Pull the values from the command
@@ -407,10 +465,7 @@ String parseCommand(String buffer) {
 
                 // Sanitize the inputs
                 if (rate <= 0) {
-                    rate = motor.gm_code.rate;
-                }
-                else {
-                    motor.gm_code.rate = rate;
+                    rate = motor.planner.getDefaultSteppingRate();
                 }
                 if (count <= 0) {
                     return FEEDBACK_NO_VALUE;
@@ -428,44 +483,13 @@ String parseCommand(String buffer) {
                 return FEEDBACK_OK;
             }
 
-            case 0: {
-                //  - G0 (ex G0 A123.45) // http://linuxcnc.org/docs/html/gcode/g-code.html#gcode:g0
-                // Pull the values from the command
-                float value = parseValue(buffer, (char)motor.axis).toFloat();
-                int32_t rate = parseValue(buffer, 'R').toInt();
-
-                // Sanitize the inputs
-                if (rate <= 0) {
-                    rate = motor.gm_code.rate;
-                }
-                else {
-                    motor.gm_code.rate = rate;
-                }
-
-                int32_t count = value / motor.getMicrostepAngle();
-
-                if (motor.gm_code.distance_mode == ABSOLUTE) {
-                    count -= motor.getDesiredStep();
-                }
-
-                STEP_DIR step_dir = COUNTER_CLOCKWISE;
-                if (count < 0.0) {
-                    count = abs(count);
-                    step_dir = CLOCKWISE;
-                }
-
-                scheduleSteps(count, rate, step_dir);
-                return FEEDBACK_OK;
-            }
-
-
             case 90: {
-                motor.gm_code.distance_mode = ABSOLUTE;
+                motor.planner.setDistanceMode(ABSOLUTE);
                 return FEEDBACK_OK;
             }
 
             case 91: {
-                motor.gm_code.distance_mode = INCREMENTAL;
+                motor.planner.setDistanceMode(INCREMENTAL);
                 return FEEDBACK_OK;
             }
 

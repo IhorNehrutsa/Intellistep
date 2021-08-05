@@ -153,3 +153,9 @@
 #if defined(CHECK_MCO_OUTPUT) && defined(CHECK_GPIO_OUTPUT_SWITCHING)
     #error Only one of the following is allowed at a time: CHECK_MCO_OUTPUT, CHECK_GPIO_OUTPUT_SWITCHING
 #endif
+
+
+// Make sure that ENABLE_FULL_MOTION_PLANNER is defined, otherwise ENABLE_DIRECT_STEPPING can't be used
+#if (defined(ENABLE_DIRECT_STEPPING) && !defined(ENABLE_FULL_MOTION_PLANNER))
+    #error In order to use ENABLE_DIRECT_STEPPING, ENABLE_FULL_MOTION_PLANNER must be uncommented
+#endif

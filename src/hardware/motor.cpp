@@ -353,6 +353,11 @@ void StepperMotor::setMicrostepping(uint16_t setMicrostepping, bool lock) {
             setSoftStepCNT(getSoftStepCNT() * stepScalingFactor);
         #endif
 
+        // Scale the steps per mm (only used if FULL_MOTION_PLANNER is enabled)
+        #ifdef ENABLE_FULL_MOTION_PLANNER
+        this -> stepsPerMM = round(stepsPerMM * stepScalingFactor);
+        #endif
+
         // Scale the microstep multiplier so that the full stepping level is maintained
         // This needs to be done before the new divisor is set
         #ifdef MAINTAIN_FULL_STEPPING
@@ -414,6 +419,19 @@ int32_t StepperMotor::getMicrostepsPerRotation() const {
     return (this -> microstepsPerRotation);
 }
 
+// Only needed if FULL_MOTION_PLANNER is enabled
+#ifdef ENABLE_FULL_MOTION_PLANNER
+// Set the steps per mm of the motor
+void StepperMotor::setStepsPerMM(uint16_t newStepsPerMM) {
+    this -> stepsPerMM = newStepsPerMM;
+}
+
+
+// Get the steps per mm of the motor
+uint16_t StepperMotor::getStepsPerMM() {
+    return (this -> stepsPerMM);
+}
+#endif // ! ENABLE_FULL_MOTION_PLANNER
 
 // Set if the motor direction should be reversed or not
 void StepperMotor::setReversed(bool reversed) {
