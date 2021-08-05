@@ -14,6 +14,7 @@ String parseCommand(String buffer) {
     //  - G90 Absolute positioning // http://linuxcnc.org/docs/html/gcode/g-code.html#gcode:g90-g91
     //  - G91 incremental positioning // http://linuxcnc.org/docs/html/gcode/g-code.html#gcode:g90-g91
     //  - G0 (ex G0 A123.45) // http://linuxcnc.org/docs/html/gcode/g-code.html#gcode:g0
+    //    https://marlinfw.org/docs/gcode/G006.html
     //  - G6 (ex G6 D0 R1000 S1000) - Direct stepping, commands the motor to move a specified number of steps in the specified direction. D is direction (0 for CCW, 1 for CW), R is rate (in Hz), and S is the count of steps to move. Requires `ENABLE_DIRECT_STEPPING`
     //  - M17 (ex M17) - Enables the motor (overrides enable pin)
     //  - M18 / M84 (ex M18 or M84) - Disables the motor (overrides enable pin)
