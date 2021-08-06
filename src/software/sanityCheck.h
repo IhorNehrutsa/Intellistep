@@ -65,10 +65,6 @@
 #endif
 
 
-// Calculate the microstep interval count
-#define MICROSTEP_INTERVAL_CNT (uint16_t)(log2(MAX_MICROSTEP_DIVISOR) - log2(MIN_MICROSTEP_DIVISOR) + 1)
-
-
 // If we're using the faster averaging using a power of 2
 #ifdef USE_POWER_2_FACTOR_AVGING
 
@@ -159,3 +155,32 @@
 #if (defined(ENABLE_DIRECT_STEPPING) && !defined(ENABLE_FULL_MOTION_PLANNER))
     #error In order to use ENABLE_DIRECT_STEPPING, ENABLE_FULL_MOTION_PLANNER must be uncommented
 #endif
+
+
+// Microstep checks (makes sure that the min and max values are within viable ranges)
+#if (IS_POWER_2(MIN_MICROSTEP_DIVISOR) != 0)
+
+    // MIN_MICROSTEP_DIVISOR is not a power of 2
+    #error MIN_MICROSTEP_DIVISOR must be a power of 2
+
+#elif (MIN_MICROSTEP_DIVISOR < 1)
+
+    // 1 is the minimum divisor
+    #error 1 is the minimum divisor for MIN_MICROSTEP_DIVISOR
+#endif
+
+#if (IS_POWER_2(MAX_MICROSTEP_DIVISOR) != 0)
+
+    // MAX_MICROSTEP_DIVISOR is not a power of 2
+    #error MAX_MICROSTEP_DIVISOR must be a power of 2
+
+#elif (MAX_MICROSTEP_DIVISOR > (SINE_VAL_COUNT / 4))
+
+    // The microstepping value is too high for the sine array
+    #error MAX_MICROSTEP_DIVISOR is set too high, the sine array does not contain enough \
+    values. Please reduce the maximum amount or add new values to the sine array
+#endif
+
+
+// Calculate the microstep interval count
+#define MICROSTEP_INTERVAL_CNT (uint16_t)(log2(MAX_MICROSTEP_DIVISOR) - log2(MIN_MICROSTEP_DIVISOR) + 1)

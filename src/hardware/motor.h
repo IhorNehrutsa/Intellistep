@@ -17,8 +17,8 @@
 // Import the pin mapping
 #include "config.h"
 
-// Maximum value for timer counters
-#define TIM_MAX_VALUE (uint16_t)65535
+// Period of timer counters is 0x10000
+#define TIM_PERIOD ((uint32_t)65536)
 
 // Enumeration for coil states
 typedef enum {
@@ -29,12 +29,19 @@ typedef enum {
     COAST
 } COIL_STATE;
 
-// Enumeration for stepping direction
-typedef enum {
-    PIN,
-    COUNTER_CLOCKWISE,
-    CLOCKWISE
-} STEP_DIR;
+#if 1
+    // 89.9kHz
+    // Enumeration for stepping direction
+    typedef enum {
+        NEGATIVE = -1,
+        POSITIVE = 1
+    } STEP_DIR;
+#else
+    // 91.17kHz
+    #define         NEGATIVE (-1)
+    #define         POSITIVE 1
+    typedef int32_t STEP_DIR;
+#endif
 
 // Enumeration for the enable state of the motor
 typedef enum {
@@ -146,10 +153,10 @@ class StepperMotor {
 
 
         // Gets the microstepping mode of the motor
-        uint16_t getMicrostepping();
+        uint8_t getMicrostepping();
 
         // Sets the microstepping mode of the motor
-        void setMicrostepping(uint16_t setMicrostepping, bool lock = true);
+        void setMicrostepping(uint8_t setMicrostepping, bool lock = true);
 
         // Sets the angle of a full step of the motor
         void setFullStepAngle(float newStepAngle);
@@ -196,9 +203,9 @@ class StepperMotor {
 
         // Calculates the coil values for the motor and updates the set angle.
         #ifdef USE_HARDWARE_STEP_CNT
-        void step(STEP_DIR dir = PIN, bool useMultiplier = true);
+        void step(STEP_DIR dir, bool useMultiplier = true);
         #else
-        void step(STEP_DIR dir = PIN, bool useMultiplier = true, bool updateDesiredPos = true);
+        void step(STEP_DIR dir, bool useMultiplier = true, bool updateDesiredPos = true);
         #endif
 
         // Sets the coils to hold the motor at the desired step number
@@ -231,8 +238,9 @@ class StepperMotor {
         // Encoder object
         Encoder encoder;
 
-        // Counter for number of overflows (needs to be public for the interrupt)
-        int32_t stepOverflowOffset = 0;
+        // Counter for number of overflows of TIM2 -> CNT (needs to be public for the interrupt)
+        // TIM2 -> CNT is unsigned, stepOverflowOffset is unsigned, but ((TIM2 -> CNT) + stepOverflowOffset) is treated as signed value
+        uint32_t stepOverflowOffset = 0;
 
         // Motion planner features
         #ifdef ENABLE_FULL_MOTION_PLANNER
@@ -283,7 +291,7 @@ class StepperMotor {
         #endif
 
         // Microstepping divisor
-        uint16_t microstepDivisor = 1;
+        uint8_t microstepDivisor = 1;
 
         // Microstep lock (makes sure that dips can't set a value
         // once the divisor is set by another source)
@@ -302,6 +310,9 @@ class StepperMotor {
         #ifdef ENABLE_FULL_MOTION_PLANNER
         float stepsPerMM = 0;
         #endif
+  
+        // Step to sine array conversion
+        int32_t stepToSineArrayFactor = MAX_MICROSTEP_DIVISOR / getMicrostepping();
 
         // If the motor is enabled or not (saves time so that the enable and disable pins are only set once)
         MOTOR_STATE state = MOTOR_NOT_SET;
@@ -309,11 +320,7 @@ class StepperMotor {
         // reversed is a multiplier for steps and angles
         // 1 - If the motor direction is normal
         // -1 - If the motor direction is inverted
-        #ifdef DIR_PIN_REVERSED
-        int8_t reversed = -1;
-        #else
-        int8_t reversed = 1;
-        #endif
+        STEP_DIR reversed = POSITIVE;
 
         // If the motor enable is inverted
         bool enableInverted = false;

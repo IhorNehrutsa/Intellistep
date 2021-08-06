@@ -793,7 +793,7 @@ double Encoder::getTemp() {
         if (temp >= OVERTEMP_SHUTDOWN_TEMP) {
 
             // Disable the motor with an overtemp
-            motor.setState(OVERTEMP);
+            motor.setState(OVERTEMP, true);
         }
 
         // Value is too high, we might need to reduce it

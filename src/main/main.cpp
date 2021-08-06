@@ -57,6 +57,8 @@ void setup() {
 
     // Zero the encoder
     motor.encoder.zero();
+
+    // Encoder speed debugging
     #ifdef CHECK_ENCODER_SPEED
         while(true) {
             GPIO_WRITE(LED_PIN, HIGH);
@@ -66,7 +68,7 @@ void setup() {
         }
     #endif
 
-    // Setup the motor for use
+    // Setup the motor for use (should be disabled at startup)
     motor.setState(DISABLED, true);
     //motor.setMicrostepping(16);
     //motor.setDesiredAngle(100);
@@ -105,6 +107,7 @@ void setup() {
         initCAN();
     #endif
 
+    // Debugging for GPIO output switching
     #ifdef CHECK_GPIO_OUTPUT_SWITCHING
         PA_8_GPIO_Init();
         while(true) {
@@ -188,6 +191,7 @@ void setup() {
     else {
         // There is a calibration, load it and move on to the loop
 
+        // Only include the extensive flash printout if the OLED is enabled
         #ifdef ENABLE_OLED
 
             // Let the user know that the calibration was successfully loaded

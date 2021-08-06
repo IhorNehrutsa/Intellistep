@@ -41,15 +41,25 @@ const int16_t sineTable[SINE_VAL_COUNT] = {
  |                                                                               *                                  *
  |                               ^                                ^                  *                          *
  |                                                                                        *                *
- |-SINE_MAX                      ^                                ^                               *                                  Microstep     Index points per sine Index points multiplier
- |                               ^                                ^                               ^                               ^    1 Full step   4                   32
- |               ^               ^                ^               ^               ^               ^               ^               ^  1/2 Half step   8                   16
- |       ^       ^       ^       ^        ^       ^       ^       ^       ^       ^       ^       ^       ^       ^       ^       ^  1/4 Microstep  16                    8
- |   ^   ^   ^   ^   ^   ^   ^   ^    ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^  1/8            32                    4
- | ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^  ^ 1/16            64                    2
- |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 1/32           128==SINE_VAL_COUNT    1
+ |-SINE_MAX                      ^                                ^                               *                                  Microstep     | Index points per sine | StepperMotor::stepToSineArrayFactor
+ |                               ^                                ^                               ^                               ^    1 Full step |   4                   | 32
+ |               ^               ^                ^               ^               ^               ^               ^               ^  1/2 Half step |   8                   | 16
+ |       ^       ^       ^       ^        ^       ^       ^       ^       ^       ^       ^       ^       ^       ^       ^       ^  1/4 Microstep |  16                   |  8
+ |   ^   ^   ^   ^   ^   ^   ^   ^    ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^   ^  1/8           |  32                   |  4
+ | ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^  ^ 1/16           |  64                   |  2
+ |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 1/32           | 128==SINE_VAL_COUNT   |  1
 
 In 1/32 microstep mode,  every sine wave index point is used. (0, 1, 2, ..., 127, 128==0, ...)
 In full step mode, only 4 index points of  sine wave are used. (0, 1/2 pi, pi, 3/2pi, 2pi, ...) == (0, 32, 64, 96, 128==0, ...)
 The rest of the modes are in between them.
+
+Microstep  |Frequency of input | Shaft, | Number of input | Number of shaft
+divider    | pulses, Hz        |   RPM  | pulses          | rotations
+      1    |        200        |    60  |     200 * N     |     N
+      2    |        400        |    60  |     400 * N     |     N
+      4    |        800        |    60  |     800 * N     |     N
+      8    |       1600        |    60  |    1600 * N     |     N
+     16    |       3200        |    60  |    3200 * N     |     N
+     32    |       6400        |    60  |    6400 * N     |     N
+The N is a natural number, 1,2,3,4,5,......
 */

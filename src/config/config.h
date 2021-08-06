@@ -10,7 +10,7 @@
 // Version of the firmware (displayed on OLED) (follows semantic versioning)
 #define MAJOR_VERSION (uint16_t)0
 #define MINOR_VERSION (uint16_t)0
-#define PATCH_VERSION (uint16_t)44
+#define PATCH_VERSION (uint16_t)45
 
 // --------------  Settings  --------------
 
@@ -158,8 +158,8 @@
 // The min/max microstepping divisors
 // Microstepping divisors are the numbers underneath the fraction of the microstepping
 // For example, 1/16th microstepping would have a divisor of 16
-#define MIN_MICROSTEP_DIVISOR   (uint8_t)1
-#define MAX_MICROSTEP_DIVISOR   (uint8_t)32
+#define MIN_MICROSTEP_DIVISOR   1
+#define MAX_MICROSTEP_DIVISOR   32
 
 // The mode to set the motor to when it's disabled
 #define IDLE_MODE               COAST

@@ -220,7 +220,7 @@ void saveParameters() {
     writeFlash(FULL_STEP_ANGLE_INDEX, motor.getFullStepAngle());
 
     // Microstepping divisor
-    writeFlash(MICROSTEPPING_INDEX, motor.getMicrostepping());
+    writeFlash(MICROSTEPPING_INDEX, (uint16_t)motor.getMicrostepping());
 
     // Motor Direction Reversed
     writeFlash(MOTOR_REVERSED_INDEX, motor.getReversed());

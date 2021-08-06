@@ -199,7 +199,7 @@ int32_t StepperMotor::getHardStepCNT() const {
 void StepperMotor::setHardStepCNT(int32_t newCNT) {
 
     // Find the remainder for the counter to use
-    uint32_t newClockCNT = (newCNT % 65536);
+    uint32_t newClockCNT = (newCNT % TIM_PERIOD);
 
     // Set the new overflow count
     stepOverflowOffset = (newCNT - newClockCNT);
@@ -213,14 +213,14 @@ void StepperMotor::setHardStepCNT(int32_t newCNT) {
 void overflowHandler() {
 
     // Check which direction the overflow was in
-    if (TIM2 -> CNT < (TIM_MAX_VALUE / 2)) {
+    if ((TIM2 -> CNT) < (TIM_PERIOD / 2)) {
 
         // Overflow
-        motor.stepOverflowOffset += 65536;
+        motor.stepOverflowOffset += TIM_PERIOD;
     }
     else {
         // Underflow
-        motor.stepOverflowOffset -= 65536;
+        motor.stepOverflowOffset -= TIM_PERIOD;
     }
 }
 #else // ! USE_HARDWARE_STEP_CNT
@@ -325,13 +325,13 @@ void StepperMotor::setPeakCurrent(uint16_t peakCurrent) {
 #endif // ! ENABLE_DYNAMIC_CURRENT
 
 // Get the microstepping divisor of the motor
-uint16_t StepperMotor::getMicrostepping() {
+uint8_t StepperMotor::getMicrostepping() {
     return (this -> microstepDivisor);
 }
 
 
 // Set the microstepping divisor of the motor
-void StepperMotor::setMicrostepping(uint16_t setMicrostepping, bool lock) {
+void StepperMotor::setMicrostepping(uint8_t setMicrostepping, bool lock) {
 
     // Make sure that the new value isn't a -1 (all functions that fail should return a -1)
     if (setMicrostepping != -1) {
@@ -372,6 +372,9 @@ void StepperMotor::setMicrostepping(uint16_t setMicrostepping, bool lock) {
 
         // Fix the microsteps per rotation
         this -> microstepsPerRotation = round(360.0 / microstepAngle);
+
+        // Fix the step to sine array factor
+        this -> stepToSineArrayFactor = MAX_MICROSTEP_DIVISOR / setMicrostepping;
 
         // Set that the microstepping should be locked for future writes
         this -> microstepLocked = lock;
@@ -438,10 +441,10 @@ void StepperMotor::setReversed(bool reversed) {
 
     // Set if the motor should be reversed
     if (reversed) {
-        this -> reversed = -1;
+        this -> reversed = NEGATIVE;
     }
     else {
-        this -> reversed = 1;
+        this -> reversed = POSITIVE;
     }
 }
 
@@ -532,6 +535,7 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
         stepChange = (this -> microstepMultiplier);
     }
 
+    /*
     // Invert the change based on the direction
     if (dir == PIN) {
 
@@ -546,6 +550,7 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
         // Make the step change in the negative direction
         stepChange = -stepChange;
     }
+    */
 
     #ifdef ENABLE_STEPPING_VELOCITY
         isStepping = false;
@@ -560,8 +565,9 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
     }
     #endif
 
+    // Invert the change based on the direction
     // Only moving one step in the specified direction
-    this -> currentStep += stepChange;
+    this -> currentStep += stepChange * dir * (this -> reversed);
 
     // Drive the coils to their destination
     this -> driveCoils(this -> currentStep);
@@ -571,8 +577,10 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
 // Sets the coils of the motor based on the step count
 void StepperMotor::driveCoils(int32_t steps) {
 
-    // Calculate the sine and cosine of the angle
-    uint16_t arrayIndex = steps & (SINE_VAL_COUNT - 1);
+    // Correct the steps to the 32nd microstep range, then
+    // calculate the sine and cosine of the angle
+    // (sine values are based on 32nd microstepping range)
+    uint16_t arrayIndex = (((int64_t)steps) * (this -> stepToSineArrayFactor)) & (SINE_VAL_COUNT - 1);
 
     // Calculate the coil settings
     int16_t coilAPercent = fastSin(arrayIndex);

@@ -211,7 +211,7 @@ void displayMotorData() {
     }
 
     // Get the current absolute angle
-    double currentAbsAngle = motor.encoder.getAbsoluteAngleAvg();
+    double currentAbsAngle = motor.encoder.getAbsoluteAngle();
 
     // RPM of the motor (RPM is capped at 2 decimal places)
     #ifdef ENCODER_SPEED_ESTIMATION

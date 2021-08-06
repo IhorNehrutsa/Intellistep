@@ -50,7 +50,7 @@ static uint8_t interruptBlockCount = 0;
     HardwareTimer *stepScheduleTimer = new HardwareTimer(TIM4);
 
     // Direction of movement for direct steps
-    STEP_DIR scheduledStepDir = COUNTER_CLOCKWISE;
+    STEP_DIR scheduledStepDir = POSITIVE;
 
     // Remaining step count
     int64_t remainingScheduledSteps = 0;
@@ -252,7 +252,7 @@ void stepMotor() {
     #endif
 
     // Step the motor
-    motor.step();
+    motor.step((STEP_DIR)DIRECTION(GPIO_READ(DIRECTION_PIN)));
 
     #ifdef CHECK_STEPPING_RATE
         GPIO_WRITE(LED_PIN, LOW);
@@ -288,7 +288,10 @@ void correctMotor() {
     else {
 
         // Enable the motor if it's not already (just energizes the coils to hold it in position)
-        motor.setState(ENABLED);
+        // Motor should not be enabled every cycle if the PID manages disabling the motor
+        #if (!(DEFAULT_PID_DISABLE_THRESHOLD > 0))
+            motor.setState(ENABLED);
+        #endif
 
         // Get the current angle of the motor
         float currentAbsAngle = motor.encoder.getAbsoluteAngleAvgFloat();
@@ -315,10 +318,10 @@ void correctMotor() {
                 else {
                     // Set the direction
                     if (pidOutput > 0) {
-                        scheduledStepDir = COUNTER_CLOCKWISE;
+                        scheduledStepDir = POSITIVE;
                     }
                     else {
-                        scheduledStepDir = CLOCKWISE;
+                        scheduledStepDir = NEGATIVE;
                     }
 
                     // Set that we don't want to decrement the counter
@@ -362,18 +365,18 @@ void correctMotor() {
                         // Motor is at a position larger than the desired one
                         // Use the current angle to find the current step, then subtract 1
                         #ifdef USE_HARDWARE_STEP_CNT
-                            motor.step(CLOCKWISE, false);
+                            motor.step(NEGATIVE, false);
                         #else
-                            motor.step(CLOCKWISE, false, false);
+                            motor.step(NEGATIVE, false, false);
                         #endif
                     }
                     else {
                         // Motor is at a position smaller than the desired one
                         // Use the current angle to find the current step, then add 1
                         #ifdef USE_HARDWARE_STEP_CNT
-                            motor.step(COUNTER_CLOCKWISE, false);
+                            motor.step(POSITIVE, false);
                         #else
-                            motor.step(COUNTER_CLOCKWISE, false, false);
+                            motor.step(POSITIVE, false, false);
                         #endif
                     }
                 }
