@@ -448,13 +448,13 @@ String parseCommand(String buffer) {
                 }
 
                 // Default to CCW rotation
-                STEP_DIR dir = COUNTER_CLOCKWISE;
+                STEP_DIR dir = POSITIVE;
 
                 // If the count is negative (motor needs to move in opposite direction)
                 // then we can make the count positive and fix the direction
                 if (count < 0) {
                     count = -count;
-                    dir = CLOCKWISE;
+                    dir = NEGATIVE;
                 }
 
                 // Schedule the steps to be moved

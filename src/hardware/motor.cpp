@@ -535,23 +535,6 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
         stepChange = (this -> microstepMultiplier);
     }
 
-    /*
-    // Invert the change based on the direction
-    if (dir == PIN) {
-
-        // Use the DIR_PIN state to decide direction
-        stepChange *= (DIRECTION(GPIO_READ(DIRECTION_PIN)) * (this -> reversed));
-    }
-    //else if (dir == COUNTER_CLOCKWISE) {
-        // Nothing to do here, the value is already positive
-    //}
-    else if (dir == CLOCKWISE) {
-
-        // Make the step change in the negative direction
-        stepChange = -stepChange;
-    }
-    */
-
     #ifdef ENABLE_STEPPING_VELOCITY
         isStepping = false;
     #endif
