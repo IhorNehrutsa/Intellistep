@@ -12,7 +12,7 @@ String parseCommand(String buffer) {
     // Gcode Table
     //  - G90 Absolute positioning // http://linuxcnc.org/docs/html/gcode/g-code.html#gcode:g90-g91
     //  - G91 incremental positioning // http://linuxcnc.org/docs/html/gcode/g-code.html#gcode:g90-g91
-    //  - G0 (ex G0 A123.45) // http://linuxcnc.org/docs/html/gcode/g-code.html#gcode:g0
+    //  - G0 (ex G0 R1000 A123.45) // http://linuxcnc.org/docs/html/gcode/g-code.html#gcode:g0
     //    https://marlinfw.org/docs/gcode/G006.html
     //  - G6 (ex G6 D0 R1000 S1000) - Direct stepping, commands the motor to move a specified number of steps in the specified direction. D is direction (0 for CCW, 1 for CW), R is rate (in Hz), and S is the count of steps to move. Requires `ENABLE_DIRECT_STEPPING`
     //  - M17 (ex M17) - Enables the motor (overrides enable pin)
@@ -398,7 +398,7 @@ String parseCommand(String buffer) {
         switch (parseValue(buffer, 'G').toInt()) {
 
             case 0: {
-                // - G0 (ex G0 A123.45) - Rapid movement at a specified distance. Distance can be in degrees (for axes A, B, C) or in mm (for axes X, Y, Z). Steps/mm must be set for movements using mm units
+                // - G0 (ex G0 R1000 A123.45) - Rapid movement at a specified distance. Distance can be in degrees (for axes A, B, C) or in mm (for axes X, Y, Z). Steps/mm must be set for movements using mm units
                 // http://linuxcnc.org/docs/html/gcode/g-code.html#gcode:g0
                 // Pull the values from the command
                 float value = parseValue(buffer, (char)motor.axis).toFloat();
@@ -467,8 +467,11 @@ String parseCommand(String buffer) {
                 if (rate <= 0) {
                     rate = motor.planner.getDefaultSteppingRate();
                 }
-                if (count <= 0) {
+                if (count == 0) {
                     return FEEDBACK_NO_VALUE;
+                }
+                if (count < 0) {
+                    reverse = not reverse;
                 }
 
                 // Call the steps to be scheduled
