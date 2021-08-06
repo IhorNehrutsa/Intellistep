@@ -390,7 +390,7 @@ String parseCommand(String buffer) {
     }
 
     // Gcodes support
-    #ifdef ENABLE_DIRECT_STEPPING
+    #ifdef ENABLE_FULL_MOTION_PLANNER
     // Check to see if a gcode exists
     else if (parseValue(buffer, 'G') != "-1") {
 
@@ -464,6 +464,7 @@ String parseCommand(String buffer) {
                 return FEEDBACK_OK;
             }
 
+            #ifdef ENABLE_DIRECT_STEPPING
             case 6: {
                 // G6 (ex G6 D0 R1000 S1000) - Direct stepping, commands the motor to move a specified number of steps in the specified direction. D is direction (0 for CCW, 1 for CW), R is rate (in Hz), and S is the count of steps to move
                 // Pull the values from the command
@@ -473,14 +474,17 @@ String parseCommand(String buffer) {
 
                 // Sanitize the inputs
                 if (rate <= 0) {
-                    rate = motor.planner.getDefaultSteppingRate();
+                    rate = motor.planner.getLastStepRate();
                 }
                 if (count == 0) {
                     return FEEDBACK_NO_VALUE;
                 }
                 if (count < 0) {
-                    reverse = not reverse;
+                    reverse = !reverse;
                 }
+
+                // Save the current rate as the new one
+                motor.planner.setLastStepRate(rate);
 
                 // Call the steps to be scheduled
                 if (!reverse) {
@@ -493,6 +497,7 @@ String parseCommand(String buffer) {
                 // All good, we can exit
                 return FEEDBACK_OK;
             }
+            #endif
 
             case 90: {
                 motor.planner.setDistanceMode(ABSOLUTE);
@@ -512,7 +517,7 @@ String parseCommand(String buffer) {
 
     }
 
-    #endif
+    #endif // ! ENABLE_FULL_MOTION_PLANNER
 
     // Nothing here, nothing to do
     return FEEDBACK_NO_CMD_SPECIFIED;

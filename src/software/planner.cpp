@@ -31,14 +31,24 @@ void Planner::setDefaultSteppingRate(int32_t newRate) {
 int32_t Planner::getDefaultSteppingRate() {
     return (this -> defaultStepRate);
 }
-#endif // ! ENABLE_DIRECT_STEPPING
 
 // Set the last step rate
+void Planner::setLastStepRate(int32_t rate) {
+    this -> lastStepRate = rate;
+}
+
+// Get the last step rate
+int32_t Planner::getLastStepRate() {
+    return (this -> lastStepRate);
+}
+#endif // ! ENABLE_DIRECT_STEPPING
+
+// Set the last feed rate
 void Planner::setLastFeedRate(int32_t rate) {
     this -> lastFeedRate = rate;
 }
 
-// Get the last step rate
+// Get the last feed rate
 int32_t Planner::getLastFeedRate() {
     return (this -> lastFeedRate);
 }
