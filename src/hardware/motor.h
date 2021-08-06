@@ -167,10 +167,10 @@ class StepperMotor {
         // Only needed if FULL_MOTION_PLANNER is enabled
         #ifdef ENABLE_FULL_MOTION_PLANNER
         // Set the steps per mm of the motor
-        void setStepsPerMM(uint16_t newStepsPerMM);
+        void setStepsPerMM(float newStepsPerMM);
 
         // Get the steps per mm of the motor
-        uint16_t getStepsPerMM();
+        float getStepsPerMM();
         #endif // ! ENABLE_FULL_MOTION_PLANNER
 
         // Set if the motor should be reversed
@@ -234,15 +234,14 @@ class StepperMotor {
         // Counter for number of overflows (needs to be public for the interrupt)
         int32_t stepOverflowOffset = 0;
 
-        // Planner (used for motion support)
+        // Motion planner features
         #ifdef ENABLE_FULL_MOTION_PLANNER
+        // Planner (used for motion support)
         Planner planner;
-        #endif
 
         // Motor axis
-        #ifdef ENABLE_FULL_MOTION_PLANNER
         AXES axis = A_AXIS;
-        #endif
+        #endif // ! ENABLE_FULL_MOTION_PLANNER
 
     // Things that shouldn't be accessed by the outside
     private:
@@ -301,7 +300,7 @@ class StepperMotor {
 
         // Variable to save the steps per mm of the motor (only needed if FULL_MOTION_PLANNER is enabled)
         #ifdef ENABLE_FULL_MOTION_PLANNER
-        uint16_t stepsPerMM = 0;
+        float stepsPerMM = 0;
         #endif
 
         // If the motor is enabled or not (saves time so that the enable and disable pins are only set once)

@@ -398,19 +398,19 @@ String parseCommand(String buffer) {
         switch (parseValue(buffer, 'G').toInt()) {
 
             case 0: {
-                // - G0 (ex G0 R1000 A123.45) - Rapid movement at a specified distance. Distance can be in degrees (for axes A, B, C) or in mm (for axes X, Y, Z). Steps/mm must be set for movements using mm units
+                // - G0 (ex G0 R1000 A123.45) - Rapid movement at a specified distance. Distance can be in degrees (for axes A, B, C) or in mm (for axes X, Y, Z). Steps/mm must be set for movements using mm units. The feedrate is in units per minute (mm/m for X, Y, and Z, deg/m for A, B, and C)
                 // http://linuxcnc.org/docs/html/gcode/g-code.html#gcode:g0
                 // Pull the values from the command
                 float value = parseValue(buffer, (char)motor.axis).toFloat();
-                int32_t rate = parseValue(buffer, 'R').toInt();
+                float rate = parseValue(buffer, 'F').toFloat();
 
                 // Sanitize the inputs
                 if (rate <= 0) {
-                    rate = motor.planner.getLastStepRate();
+                    rate = motor.planner.getLastFeedRate();
                 }
 
                 // Save the new rate for next time (needed if the next command doesn't specify rate)
-                motor.planner.setLastStepRate(rate);
+                motor.planner.setLastFeedRate(rate);
 
                 // Determine the number of steps we need to move
                 // Create a count value for number of steps
@@ -421,12 +421,20 @@ String parseCommand(String buffer) {
 
                     // Units are degrees
                     count = round(value / motor.getMicrostepAngle());
+
+                    // Fix the rate so that it is in steps/s instead of deg/m
+                    rate = (rate / (motor.getMicrostepAngle() * 60));
                 }
                 else {
                     // Units must be in mm
                     // Check to make sure that steps per mm has been set
                     if (motor.getStepsPerMM() > 0) {
+
+                        // Set the count value
                         count = round(value * motor.getStepsPerMM());
+
+                        // Fix the rate so that it is in steps/s instead of mm/m
+                        rate = (rate * motor.getStepsPerMM()) / 60;
                     }
                     else {
                         // There is no steps per mm, throw an error

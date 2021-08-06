@@ -355,7 +355,7 @@ void StepperMotor::setMicrostepping(uint16_t setMicrostepping, bool lock) {
 
         // Scale the steps per mm (only used if FULL_MOTION_PLANNER is enabled)
         #ifdef ENABLE_FULL_MOTION_PLANNER
-        this -> stepsPerMM = round(stepsPerMM * stepScalingFactor);
+        this -> stepsPerMM *= stepScalingFactor;
         #endif
 
         // Scale the microstep multiplier so that the full stepping level is maintained
@@ -422,13 +422,13 @@ int32_t StepperMotor::getMicrostepsPerRotation() const {
 // Only needed if FULL_MOTION_PLANNER is enabled
 #ifdef ENABLE_FULL_MOTION_PLANNER
 // Set the steps per mm of the motor
-void StepperMotor::setStepsPerMM(uint16_t newStepsPerMM) {
+void StepperMotor::setStepsPerMM(float newStepsPerMM) {
     this -> stepsPerMM = newStepsPerMM;
 }
 
 
 // Get the steps per mm of the motor
-uint16_t StepperMotor::getStepsPerMM() {
+float StepperMotor::getStepsPerMM() {
     return (this -> stepsPerMM);
 }
 #endif // ! ENABLE_FULL_MOTION_PLANNER

@@ -50,11 +50,11 @@ class Planner {
         // Get the default stepping rate for G6
         int32_t getDefaultSteppingRate();
 
-        // Set the last step rate
-        void setLastStepRate(int32_t rate);
+        // Set the last feed rate
+        void setLastFeedRate(int32_t rate);
 
-        // Get the last step rate
-        int32_t getLastStepRate();
+        // Get the last feed rate
+        int32_t getLastFeedRate();
 
     private:
         // Keeps the current G code distance mode
@@ -62,14 +62,14 @@ class Planner {
 
         #ifdef ENABLE_DIRECT_STEPPING
         // Keeps the current G code rate for G6 in Hz
-        int32_t defaultRate = DEFAULT_STEPPING_RATE;
+        int32_t defaultStepRate = DEFAULT_STEPPING_RATE;
         #endif
 
         // Keeps the last rate used
         #ifdef ENABLE_DIRECT_STEPPING
-        int32_t lastRate = DEFAULT_STEPPING_RATE;
+        int32_t lastFeedRate = DEFAULT_STEPPING_RATE;
         #else
-        int32_t lastRate = 0;
+        int32_t lastFeedRate = 0;
         #endif
 };
 

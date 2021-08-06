@@ -27,7 +27,7 @@ Future Features:
 
 G/M Code Table
 
-- G0 (ex G0 A123.45) - Rapid movement at a specified distance. Distance can be in degrees (for axes A, B, C) or in mm (for axes X, Y, Z). Steps/mm must be set for movements using mm units. Requires `ENABLE_FULL_MOTION_PLANNER`
+- G0 (ex G0 A123.45) - Rapid movement at a specified distance. Distance can be in degrees (for axes A, B, C) or in mm (for axes X, Y, Z). Steps/mm must be set for movements using mm units. The feedrate is in units per minute (mm/m for X, Y, and Z, deg/m for A, B, and C). Requires `ENABLE_FULL_MOTION_PLANNER`
 - G6 (ex G6 D0 R1000 S1000) - Direct stepping, commands the motor to move a specified number of steps in the specified direction. D is direction (0 for CCW, 1 for CW), R is rate (in Hz), and S is the count of steps to move. Requires `ENABLE_DIRECT_STEPPING`
 - G90 (ex G90) - Sets the movement units in absolute positioning. Requires `ENABLE_FULL_MOTION_PLANNER`
 - G91 (ex G91) - Sets the movement units in relative (incremental) positioning. Requires `ENABLE_FULL_MOTION_PLANNER`
