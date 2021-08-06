@@ -390,7 +390,7 @@ String parseCommand(String buffer) {
     }
 
     // Gcodes support
-    #ifdef ENABLE_DIRECT_STEPPING
+    #if defined(ENABLE_DIRECT_STEPPING) || defined(ENABLE_PID)
     // Check to see if a gcode exists
     else if (parseValue(buffer, 'G') != "-1") {
 
