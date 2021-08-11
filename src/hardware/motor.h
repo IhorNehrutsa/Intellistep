@@ -193,7 +193,7 @@ class StepperMotor {
 
         // Calculates the coil values for the motor and updates the set angle.
         #ifdef USE_HARDWARE_STEP_CNT
-        void step(STEP_DIR dir, bool useMultiplier = true);
+        void step(STEP_DIR dir, bool useMultiplier = true, bool updateDesiredPos = true);
         #else
         void step(STEP_DIR dir, bool useMultiplier = true, bool updateDesiredPos = true);
         #endif
@@ -232,7 +232,6 @@ class StepperMotor {
         // TIM2 -> CNT is unsigned, stepOverflowOffset is unsigned, but ((TIM2 -> CNT) + stepOverflowOffset) is treated as signed value
         uint32_t stepOverflowOffset = 0;
 
-
     // Things that shouldn't be accessed by the outside
     private:
 
@@ -242,7 +241,7 @@ class StepperMotor {
         // Function that enables the motor
         void enable();
 
-        #ifndef USE_HARDWARE_STEP_CNT
+        #ifdef USE_SOFTWARE_STEP_CNT
             // Keeps the desired step of the motor
             int32_t softStepCNT = 0;
         #endif

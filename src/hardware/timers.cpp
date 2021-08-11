@@ -160,7 +160,7 @@ void disableInterrupts() {
 
     // Disable the interrupts if this is the first block
     if (interruptBlockCount == 0) {
-        __disable_irq();
+        //__disable_irq();
         syncInstructions();
     }
 

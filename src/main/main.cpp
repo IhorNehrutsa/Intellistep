@@ -55,9 +55,6 @@ void setup() {
         initLED();
     #endif
 
-    // Zero the encoder
-    motor.encoder.zero();
-
     // Encoder speed debugging
     #ifdef CHECK_ENCODER_SPEED
         while(true) {
@@ -69,9 +66,12 @@ void setup() {
     #endif
 
     // Setup the motor for use (should be disabled at startup)
-    motor.setState(DISABLED, true);
+    motor.setState(ENABLED, true);
     //motor.setMicrostepping(16);
     //motor.setDesiredAngle(100);
+
+    // Zero the encoder
+    motor.encoder.zero();
 
     // Only run if the OLED is enabled
     #ifdef ENABLE_OLED

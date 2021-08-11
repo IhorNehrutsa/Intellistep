@@ -223,7 +223,9 @@ void overflowHandler() {
         motor.stepOverflowOffset -= TIM_PERIOD;
     }
 }
-#else // ! USE_HARDWARE_STEP_CNT
+#endif // USE_HARDWARE_STEP_CNT
+
+#ifdef USE_SOFTWARE_STEP_CNT
 // Returns the desired step of the motor
 int32_t StepperMotor::getSoftStepCNT() {
     return (this -> softStepCNT);
@@ -234,7 +236,7 @@ int32_t StepperMotor::getSoftStepCNT() {
 void StepperMotor::setSoftStepCNT(int32_t newStepCNT) {
     this -> softStepCNT = newStepCNT;
 }
-#endif // ! USE_HARDWARE_STEP_CNT
+#endif // USE_SOFTWARE_STEP_CNT
 
 
 #ifdef ENABLE_DYNAMIC_CURRENT
@@ -490,7 +492,7 @@ void StepperMotor::simpleStep() {
 
 // Computes the coil values for the next step position and increments the set angle
 #ifdef USE_HARDWARE_STEP_CNT
-void StepperMotor::step(STEP_DIR dir, bool useMultiplier) {
+void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos) {
 #else
 void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos) {
 #endif
@@ -510,11 +512,11 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
     if (!useMultiplier) {
 
         // Only move one step per pulse when multiplier is disabled
-        stepChange = 1;
+        stepChange =  dir * (this -> reversed);
     }
     else {
         // Move the number of steps specified by the microstep multiplier
-        stepChange = (this -> microstepMultiplier);
+        stepChange = (this -> microstepMultiplier) * dir * (this -> reversed);
     }
 
     /*
@@ -538,7 +540,7 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
         isStepping = false;
     #endif
 
-    #ifndef USE_HARDWARE_STEP_CNT
+    #ifdef USE_SOFTWARE_STEP_CNT
     // Update the desired angle if specified
     if (updateDesiredPos) {
 
@@ -549,7 +551,7 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
 
     // Invert the change based on the direction
     // Only moving one step in the specified direction
-    this -> currentStep += stepChange * dir * (this -> reversed);
+    this -> currentStep += stepChange;
 
     // Drive the coils to their destination
     this -> driveCoils(this -> currentStep);
