@@ -252,7 +252,7 @@ void stepMotor() {
     #endif
 
     // Step the motor
-    motor.step((STEP_DIR)DIRECTION(GPIO_READ(DIRECTION_PIN)));
+    motor.step((STEP_DIR)DIRECTION(GPIO_READ(DIRECTION_PIN)), motor.microstepMultiplier);
 
     #ifdef CHECK_STEPPING_RATE
         GPIO_WRITE(LED_PIN, LOW);
@@ -365,18 +365,18 @@ void correctMotor() {
                         // Motor is at a position larger than the desired one
                         // Use the current angle to find the current step, then subtract 1
                         #ifdef USE_HARDWARE_STEP_CNT
-                            motor.step(NEGATIVE, false);
+                            motor.step(NEGATIVE, 1);
                         #else
-                            motor.step(NEGATIVE, false, false);
+                            motor.step(NEGATIVE, 1, false);
                         #endif
                     }
                     else {
                         // Motor is at a position smaller than the desired one
                         // Use the current angle to find the current step, then add 1
                         #ifdef USE_HARDWARE_STEP_CNT
-                            motor.step(POSITIVE, false);
+                            motor.step(POSITIVE, 1);
                         #else
-                            motor.step(POSITIVE, false, false);
+                            motor.step(POSITIVE, 1, false);
                         #endif
                     }
                 }
@@ -484,7 +484,7 @@ void stepScheduleHandler() {
     if (decrementRemainingSteps) {
 
         // Increment the motor in the correct direction
-        motor.step(scheduledStepDir);
+        motor.step(scheduledStepDir,  motor.microstepMultiplier);
 
         // Increment the counter down (we completed a step)
         remainingScheduledSteps--;
@@ -507,9 +507,9 @@ void stepScheduleHandler() {
     else {
         // Just step the motor in the desired direction
         #ifdef USE_HARDWARE_STEP_CNT
-            motor.step(scheduledStepDir, false);
+            motor.step(scheduledStepDir, 1);
         #else
-            motor.step(scheduledStepDir, false, false);
+            motor.step(scheduledStepDir, 1, false);
         #endif
     }
 }

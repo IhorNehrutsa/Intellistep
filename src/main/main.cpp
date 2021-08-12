@@ -50,14 +50,6 @@ void setup() {
         MCO_GPIO_Init();
     #endif
 
-    // Initialize the LED
-    #ifdef ENABLE_LED
-        initLED();
-    #endif
-
-    // Zero the encoder
-    motor.encoder.zero();
-
     // Encoder speed debugging
     #ifdef CHECK_ENCODER_SPEED
         while(true) {
@@ -68,10 +60,41 @@ void setup() {
         }
     #endif
 
-    // Setup the motor for use (should be disabled at startup)
-    motor.setState(DISABLED, true);
-    //motor.setMicrostepping(16);
-    //motor.setDesiredAngle(100);
+    // Debugging for GPIO output switching
+    #ifdef CHECK_GPIO_OUTPUT_SWITCHING
+        PA_8_GPIO_Init();
+        while(true) {
+            GPIO_WRITE(PA_8, HIGH);
+            GPIO_WRITE(PA_8, HIGH);
+            GPIO_WRITE(PA_8, HIGH);
+            GPIO_WRITE(PA_8, HIGH);
+            GPIO_WRITE(PA_8, HIGH);
+            GPIO_WRITE(PA_8, HIGH);
+            GPIO_WRITE(PA_8, HIGH);
+            GPIO_WRITE(PA_8, HIGH);
+            GPIO_WRITE(PA_8, HIGH);
+            GPIO_WRITE(PA_8, HIGH);
+
+            GPIO_WRITE(PA_8, LOW);
+            GPIO_WRITE(PA_8, LOW);
+            GPIO_WRITE(PA_8, LOW);
+            GPIO_WRITE(PA_8, LOW);
+            GPIO_WRITE(PA_8, LOW);
+            GPIO_WRITE(PA_8, LOW);
+            GPIO_WRITE(PA_8, LOW);
+            GPIO_WRITE(PA_8, LOW);
+            GPIO_WRITE(PA_8, LOW);
+            GPIO_WRITE(PA_8, LOW);
+        }
+    #endif
+
+    // Initialize the LED
+    #ifdef ENABLE_LED
+        initLED();
+    #endif
+
+    // Zero the encoder
+    motor.encoder.zero();
 
     // Only run if the OLED is enabled
     #ifdef ENABLE_OLED
@@ -105,34 +128,6 @@ void setup() {
     #ifdef ENABLE_CAN
         // Initialize the CAN bus
         initCAN();
-    #endif
-
-    // Debugging for GPIO output switching
-    #ifdef CHECK_GPIO_OUTPUT_SWITCHING
-        PA_8_GPIO_Init();
-        while(true) {
-            GPIO_WRITE(PA_8, HIGH);
-            GPIO_WRITE(PA_8, HIGH);
-            GPIO_WRITE(PA_8, HIGH);
-            GPIO_WRITE(PA_8, HIGH);
-            GPIO_WRITE(PA_8, HIGH);
-            GPIO_WRITE(PA_8, HIGH);
-            GPIO_WRITE(PA_8, HIGH);
-            GPIO_WRITE(PA_8, HIGH);
-            GPIO_WRITE(PA_8, HIGH);
-            GPIO_WRITE(PA_8, HIGH);
-
-            GPIO_WRITE(PA_8, LOW);
-            GPIO_WRITE(PA_8, LOW);
-            GPIO_WRITE(PA_8, LOW);
-            GPIO_WRITE(PA_8, LOW);
-            GPIO_WRITE(PA_8, LOW);
-            GPIO_WRITE(PA_8, LOW);
-            GPIO_WRITE(PA_8, LOW);
-            GPIO_WRITE(PA_8, LOW);
-            GPIO_WRITE(PA_8, LOW);
-            GPIO_WRITE(PA_8, LOW);
-        }
     #endif
 
     // Clear the display, then write that we're using the closed loop mode
@@ -179,11 +174,13 @@ void setup() {
                 if (getMenuDepth() > 0) {
 
                     // Calibrate the motor (board reboots afterward)
+                    // Reboot the chip
                     motor.calibrate();
                 }
 
             #else
                 // Just jump to calibrating the motor (board reboots afterward)
+                // Reboot the chip
                 motor.calibrate();
             #endif
         }
@@ -226,6 +223,17 @@ void setup() {
         // Setup the motor timers and interrupts
         setupMotorTimers();
     }
+
+    // Setup the motor for use (should be enabled at startup)
+    // The jump when power is on
+    motor.setState(ENABLED, true);
+
+    // Delay for move to power on position
+    // Needs the motor timers
+    delay(1000);
+
+    // Zero the encoder after motor is enabled
+    motor.encoder.zero();
 }
 
 
