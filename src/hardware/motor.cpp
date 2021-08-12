@@ -150,40 +150,40 @@ int32_t StepperMotor::getStepPhase() {
 
 // Returns the desired angle of the motor
 float StepperMotor::getDesiredAngle() {
-    #ifdef USE_HARDWARE_STEP_CNT
-        return (microstepAngle * getHardStepCNT());
-    #else
+    #ifdef USE_SOFTWARE_STEP_CNT
         return (microstepAngle * getSoftStepCNT());
+    #else
+        return (microstepAngle * getHardStepCNT());
     #endif
 }
 
 
 // Sets the desired angle of the motor
 void StepperMotor::setDesiredAngle(float newDesiredAngle) {
-    #ifdef USE_HARDWARE_STEP_CNT
-        setHardStepCNT(round(newDesiredAngle / microstepAngle));
-    #else
+    #ifdef USE_SOFTWARE_STEP_CNT
         setSoftStepCNT(round(newDesiredAngle / microstepAngle));
+    #else
+        setHardStepCNT(round(newDesiredAngle / microstepAngle));
     #endif
 }
 
 
 // Returns the desired step of the motor
 int32_t StepperMotor::getDesiredStep() {
-    #ifdef USE_HARDWARE_STEP_CNT
-        return getHardStepCNT();
-    #else
+    #ifdef USE_SOFTWARE_STEP_CNT
         return getSoftStepCNT();
+    #else
+        return getHardStepCNT();
     #endif
 }
 
 
 // Sets the desired step of the motor
 void StepperMotor::setDesiredStep(int32_t newDesiredStep) {
-    #ifdef USE_HARDWARE_STEP_CNT
-        setHardStepCNT(newDesiredStep);
-    #else
+    #ifdef USE_SOFTWARE_STEP_CNT
         setSoftStepCNT(newDesiredStep);
+    #else
+        setHardStepCNT(newDesiredStep);
     #endif
 }
 
