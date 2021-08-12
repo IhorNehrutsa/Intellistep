@@ -60,7 +60,7 @@
 
 // Button mappings
 #define SELECT_BUTTON_PIN       PB_1 // topmost button on the PCB
-#define BACK_BUTTON_PIN         PB_0 // midle button on the PCB
+#define BACK_BUTTON_PIN         PB_0 // middle button on the PCB
 #define DOWN_BUTTON_PIN         PA_3 // lowest button on the PCB
 
 // Dip switch mappings
