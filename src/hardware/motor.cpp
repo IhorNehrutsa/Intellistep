@@ -227,7 +227,7 @@ void overflowHandler() {
 
 #ifdef USE_SOFTWARE_STEP_CNT
 // Returns the desired step of the motor
-int32_t StepperMotor::getSoftStepCNT() {
+int32_t StepperMotor::getSoftStepCNT() const {
     return (this -> softStepCNT);
 }
 
@@ -349,10 +349,10 @@ void StepperMotor::setMicrostepping(uint8_t setMicrostepping, bool lock) {
         float stepScalingFactor = (setMicrostepping / this -> microstepDivisor);
 
         // Scale the step count
-        #ifdef USE_HARDWARE_STEP_CNT
-            setHardStepCNT(getHardStepCNT() * stepScalingFactor);
-        #else
+        #ifdef USE_SOFTWARE_STEP_CNT
             setSoftStepCNT(getSoftStepCNT() * stepScalingFactor);
+        #else
+            setHardStepCNT(getHardStepCNT() * stepScalingFactor);
         #endif
 
         // Scale the microstep multiplier so that the full stepping level is maintained

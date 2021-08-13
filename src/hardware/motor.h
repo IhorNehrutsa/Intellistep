@@ -105,7 +105,7 @@ class StepperMotor {
         void setDesiredStep(int32_t newDesiredStep);
 
         // Returns the desired step of the motor
-        int32_t getSoftStepCNT();
+        int32_t getSoftStepCNT() const;
 
         // Sets the desired step of the motor
         void setSoftStepCNT(int32_t newStepCNT);
