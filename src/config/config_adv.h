@@ -22,7 +22,7 @@ typedef float real_t;
 #define REJECT_ENCODERS_LSB 2
 
 // If the steps should be counted using a hardware counter
-#define USE_HARDWARE_STEP_CNT
+//#define USE_HARDWARE_STEP_CNT
 #define USE_SOFTWARE_STEP_CNT
 
 // Board characteristics
