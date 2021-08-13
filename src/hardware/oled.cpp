@@ -228,7 +228,7 @@ void displayMotorData() {
 
     #endif // ! ENCODER_SPEED_ESTIMATION
 
-    //snprintf(outBuffer, OB_SIZE, "sStp:% 10ld", motor.getSoftStepCNT());
+    snprintf(outBuffer, OB_SIZE, "sStp:% 10ld", motor.getSoftStepCNT());
 
     writeOLEDString(0, 0, outBuffer, false);
 
@@ -245,6 +245,7 @@ void displayMotorData() {
 
     //snprintf(outBuffer, OB_SIZE, "dStp:% 10ld", motor.getDesiredStep());
     //snprintf(outBuffer, OB_SIZE, "hStp:% 10ld", motor.getHardStepCNT());
+    snprintf(outBuffer, OB_SIZE, "h-s: % 10ld", motor.getHardStepCNT()-motor.getSoftStepCNT());
 
     writeOLEDString(0, LINE_HEIGHT * 3, outBuffer, true);
 }
