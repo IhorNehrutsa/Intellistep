@@ -30,6 +30,7 @@ typedef enum {
 
 #if 1
     // 89.9kHz
+    // 92.12kHz
     // Enumeration for stepping direction
     typedef enum {
         NEGATIVE = -1,
@@ -37,6 +38,7 @@ typedef enum {
     } STEP_DIR;
 #else
     // 91.17kHz
+    // 92.24kHz
     #define         NEGATIVE (-1)
     #define         POSITIVE 1
     typedef int32_t STEP_DIR;
@@ -193,9 +195,9 @@ class StepperMotor {
 
         // Calculates the coil values for the motor and updates the set angle.
         #ifdef USE_HARDWARE_STEP_CNT
-        void step(STEP_DIR dir, bool useMultiplier = true, bool updateDesiredPos = true);
+        void step(STEP_DIR dir, int32_t stepChange, bool updateDesiredPos = true);
         #else
-        void step(STEP_DIR dir, bool useMultiplier = true, bool updateDesiredPos = true);
+        void step(STEP_DIR dir, int32_t stepChange, bool updateDesiredPos = true);
         #endif
 
         // Sets the coils to hold the motor at the desired step number
@@ -231,6 +233,9 @@ class StepperMotor {
         // Counter for number of overflows of TIM2 -> CNT (needs to be public for the interrupt)
         // TIM2 -> CNT is unsigned, stepOverflowOffset is unsigned, but ((TIM2 -> CNT) + stepOverflowOffset) is treated as signed value
         uint32_t stepOverflowOffset = 0;
+
+        // Microstep multiplier (used to move a custom number of microsteps per step pulse)
+        uint32_t microstepMultiplier = DEFAULT_MICROSTEP_MULTIPLIER;
 
     // Things that shouldn't be accessed by the outside
     private:
@@ -300,9 +305,6 @@ class StepperMotor {
 
         // If the motor enable is inverted
         bool enableInverted = false;
-
-        // Microstep multiplier (used to move a custom number of microsteps per step pulse)
-        uint32_t microstepMultiplier = DEFAULT_MICROSTEP_MULTIPLIER;
 
         // Analog info structures for PWM current pins
         analogInfo PWMCurrentPinInfoA;

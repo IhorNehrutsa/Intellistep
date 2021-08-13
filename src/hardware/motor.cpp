@@ -492,9 +492,9 @@ void StepperMotor::simpleStep() {
 
 // Computes the coil values for the next step position and increments the set angle
 #ifdef USE_HARDWARE_STEP_CNT
-void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos) {
+void StepperMotor::step(STEP_DIR dir, int32_t stepChange, bool updateDesiredPos) {
 #else
-void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos) {
+void StepperMotor::step(STEP_DIR dir, int32_t stepChange, bool updateDesiredPos) {
 #endif
 
     #ifdef ENABLE_STEPPING_VELOCITY
@@ -504,7 +504,7 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
         prevStepingSampleTime = nowStepingSampleTime;
         nowStepingSampleTime = micros();
     #endif
-
+    /*
     // Declare a variable to calculate the step change with
     int32_t stepChange;
 
@@ -512,13 +512,13 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
     if (!useMultiplier) {
 
         // Only move one step per pulse when multiplier is disabled
-        stepChange =  dir * (this -> reversed);
+        stepChange = 1;
     }
     else {
         // Move the number of steps specified by the microstep multiplier
-        stepChange = (this -> microstepMultiplier) * dir * (this -> reversed);
+        stepChange = (this -> microstepMultiplier);
     }
-
+    */
     /*
     // Invert the change based on the direction
     if (dir == PIN) {
@@ -551,7 +551,7 @@ void StepperMotor::step(STEP_DIR dir, bool useMultiplier, bool updateDesiredPos)
 
     // Invert the change based on the direction
     // Only moving one step in the specified direction
-    this -> currentStep += stepChange;
+    this -> currentStep += stepChange * dir * (this -> reversed);
 
     // Drive the coils to their destination
     this -> driveCoils(this -> currentStep);
@@ -589,17 +589,16 @@ void StepperMotor::driveCoils(int32_t steps) {
     if (coilAPower > 0) {
 
         // Set first channel for forward movement
-        setCoilA(COIL_STATE::FORWARD, coilAPower);
+        setCoilA(FORWARD, coilAPower);
     }
     else if (coilAPower < 0) {
 
         // Set first channel for backward movement
-        setCoilA(COIL_STATE::BACKWARD, -coilAPower);
+        setCoilA(BACKWARD, -coilAPower);
     }
     else {
         setCoilA(BRAKE);
     }
-
 
     // Check the if the coil should be energized to move backward or forward
     if (coilBPower > 0) {
@@ -658,10 +657,10 @@ void StepperMotor::driveCoilsAngle(float degAngle) {
 void StepperMotor::setCoilA(COIL_STATE desiredState, uint16_t current) {
 
     // Check if the desired coil state is different from the previous, if so, we need to set the output pins
-    if (desiredState != previousCoilStateA) {
+    if (previousCoilStateA != desiredState) {
 
-        // Disable the coil
-        analogSet(&PWMCurrentPinInfoA, 0);
+        // Update the previous state of the coil with the new one
+        previousCoilStateA = desiredState;
 
         // Decide the state of the direction pins
         if (desiredState == FORWARD) {
@@ -680,9 +679,6 @@ void StepperMotor::setCoilA(COIL_STATE desiredState, uint16_t current) {
             GPIO_WRITE(COIL_A_DIR_1_PIN, LOW);
             GPIO_WRITE(COIL_A_DIR_2_PIN, LOW);
         }
-
-        // Update the previous state of the coil with the new one
-        previousCoilStateA = desiredState;
     }
 
     // Update the output pin with the correct current
@@ -694,10 +690,10 @@ void StepperMotor::setCoilA(COIL_STATE desiredState, uint16_t current) {
 void StepperMotor::setCoilB(COIL_STATE desiredState, uint16_t current) {
 
     // Check if the desired coil state is different from the previous, if so, we need to set the output pins
-    if (desiredState != previousCoilStateB) {
+    if (previousCoilStateB != desiredState) {
 
-        // Disable the coil
-        analogSet(&PWMCurrentPinInfoB, 0);
+        // Update the previous state of the coil with the new one
+        previousCoilStateB = desiredState;
 
         // Decide the state of the direction pins
         if (desiredState == FORWARD) {
@@ -716,9 +712,6 @@ void StepperMotor::setCoilB(COIL_STATE desiredState, uint16_t current) {
             GPIO_WRITE(COIL_B_DIR_1_PIN, LOW);
             GPIO_WRITE(COIL_B_DIR_2_PIN, LOW);
         }
-
-        // Update the previous state of the coil with the new one
-        previousCoilStateB = desiredState;
     }
 
     // Update the output pin with the correct current

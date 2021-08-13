@@ -40,6 +40,8 @@
 // Direction (for reverse direction)
 #define DIRECTION(x) ((x) > 0 ? 1 : (-1))  // Note: zero 'x' is not allowed
 
+#define SIGN(x) ((x) > 0 ? 1 : (x) < 0 ? (-1) : 0)
+
 // Return angle in range [0..360[ (doesn't include 360)
 #define TO360(A) ((A) - DIRECTION(A) * round(abs(A) / 360) * 360)
 
