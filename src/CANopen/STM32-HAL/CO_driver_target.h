@@ -123,6 +123,11 @@
 
 #define INAK_TIMEOUT        ((uint32_t)0x0000FFFF)
 /* Data types */
+    typedef unsigned char bool_t;
+    typedef enum{
+        CO_false = 0,
+        CO_true = 1
+    }CO_boolval_t;
 typedef float                   float32_t;
 typedef long double             float64_t;
 typedef char                    char_t;
@@ -172,7 +177,7 @@ typedef struct{
     uint16_t            txSize;
     volatile bool       CANnormal;
     volatile bool       useCANrxFilters;
-    volatile uint8_t    useCANrxFilters;
+    //volatile uint8_t    useCANrxFilters;
     volatile uint8_t    bufferInhibitFlag;
     volatile uint8_t    firstCANtxMessage;
     volatile uint16_t   CANtxCount;

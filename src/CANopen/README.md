@@ -1,6 +1,6 @@
 # BTT S42B v2 Intellistep CANopen source code directory
 
-CANopen Directory structure:
+CANopen directory structure:
 .
 |-- README.md
 |-- OD
@@ -17,3 +17,7 @@ Edit the BTT-Intellistep-CANopen.eds with EDSEditor.exe from [CANopenNode/CANope
 The STM32 directory contains [STM32, STM32CubeMX, CanOpenNode library driver](https://github.com/Cyrax86/CanOpenNode-STM32-HAL)
 
 CANopenNode homepage is https://github.com/CANopenNode/CANopenNode
+Source code directory structure:
+.
+|-- Intellistep
+`-- CANopenNode
