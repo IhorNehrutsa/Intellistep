@@ -47,7 +47,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_conf.h"
-#include "CO_driver.h"
+#include "CO_driver_target.h"
 #include "CO_Emergency.h"
 #include "led.h"
 #include <string.h>
