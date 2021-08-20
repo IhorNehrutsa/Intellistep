@@ -27,8 +27,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "stm32f1xx_hal.h"
 #include "301/CO_driver.h"
-#include "CO_Emergency.h"
+#include "301/CO_Emergency.h"
 #include "OD.h"
 
 #define CAN_CLK               48000
@@ -86,9 +87,9 @@ CO_ReturnError_t CO_CANmodule_init(CO_CANmodule_t *CANmodule,
 	CANmodule->txArray = txArray;
 	CANmodule->txSize = txSize;
 	CANmodule->CANnormal = false;
-	CANmodule->useCANrxFilters = (rxSize <= 32U) ? CO_true : CO_false;/* microcontroller dependent */
-	CANmodule->bufferInhibitFlag = CO_false;
-	CANmodule->firstCANtxMessage = CO_true;
+	CANmodule->useCANrxFilters = (rxSize <= 32U) ? true : false;/* microcontroller dependent */
+	CANmodule->bufferInhibitFlag = false;
+	CANmodule->firstCANtxMessage = true;
 	CANmodule->CANtxCount = 0U;
 	CANmodule->errOld = 0U;
 	CANmodule->em = NULL;
@@ -96,11 +97,11 @@ CO_ReturnError_t CO_CANmodule_init(CO_CANmodule_t *CANmodule,
 	for(i=0U; i<rxSize; i++)
 	{
 		rxArray[i].ident = 0U;
-		rxArray[i].pFunct = NULL;
+		rxArray[i].CANrx_callback = NULL;
 	}
 	for(i=0U; i<txSize; i++)
 	{
-		txArray[i].bufferFull = CO_false;
+		txArray[i].bufferFull = false;
 	}
 
 	/* Configure CAN module registers */
@@ -145,7 +146,7 @@ CO_ReturnError_t CO_CANmodule_init(CO_CANmodule_t *CANmodule,
 	/* Configure CAN module hardware filters */
 
 	/*********************************/
-	CANmodule->useCANrxFilters = CO_true;
+	CANmodule->useCANrxFilters = true;
 	/********************************/
 
 	if(CANmodule->useCANrxFilters)
@@ -230,6 +231,7 @@ uint16_t CO_CANrxMsg_readIdent(const CO_CANrxMsg_t *rxMsg){
 
 
 /******************************************************************************/
+/*
 CO_ReturnError_t CO_CANrxBufferInit(
         CO_CANmodule_t         *CANmodule,
         uint16_t                index,
@@ -238,18 +240,27 @@ CO_ReturnError_t CO_CANrxBufferInit(
         bool_t                  rtr,
         void                   *object,
         void                  (*pFunct)(void *object, void *message))
+*/
+CO_ReturnError_t CO_CANrxBufferInit(CO_CANmodule_t *CANmodule,
+                                    uint16_t index,
+                                    uint16_t ident,
+                                    uint16_t mask,
+                                    bool_t rtr,
+                                    void *object,
+                                    void (*CANrx_callback)(void *object,
+                                                           void *message))
 {
     CO_ReturnError_t ret = CO_ERROR_NO;
 		//CAN_FilterConfTypeDef  	sFilterConfig;
 		uint16_t RXF, RXM;
 
-    if((CANmodule!=NULL) && (object!=NULL) && (pFunct!=NULL) && (index < CANmodule->rxSize)){
+    if((CANmodule!=NULL) && (object!=NULL) && (CANrx_callback!=NULL) && (index < CANmodule->rxSize)){
         /* buffer, which will be configured */
         CO_CANrx_t *buffer = &CANmodule->rxArray[index];
 
         /* Configure object variables */
         buffer->object = object;
-        buffer->pFunct = pFunct;
+        buffer->CANrx_callback = CANrx_callback;
 
         /* CAN identifier and CAN mask, bit aligned with CAN module. Different on different microcontrollers. */
         //CAN identifier and CAN mask, bit aligned with CAN module registers
@@ -278,9 +289,9 @@ CO_CANtx_t *CO_CANtxBufferInit(
         CO_CANmodule_t         *CANmodule,
         uint16_t                index,
         uint16_t                ident,
-        bool_t               rtr,
+        bool_t            	    rtr,
         uint8_t                 noOfBytes,
-        bool_t               syncFlag)
+        bool_t              	syncFlag)
 {
     CO_CANtx_t *buffer = NULL;
 		uint32_t TXF;
@@ -299,7 +310,7 @@ CO_CANtx_t *CO_CANtxBufferInit(
 			buffer->ident = TXF;
 			buffer->DLC = noOfBytes;
 
-      buffer->bufferFull = CO_false;
+      buffer->bufferFull = false;
       buffer->syncFlag = syncFlag;
     }
 
@@ -360,7 +371,7 @@ CO_ReturnError_t CO_CANsend(CO_CANmodule_t *CANmodule, CO_CANtx_t *buffer)
     }
     /* if no buffer is free, message will be sent by interrupt */
     else{
-        buffer->bufferFull = CO_true;
+        buffer->bufferFull = true;
         CANmodule->CANtxCount++;
 				__HAL_CAN_ENABLE_IT(&hcan, CAN_IT_TME  );
     }
@@ -379,7 +390,7 @@ void CO_CANclearPendingSyncPDOs(CO_CANmodule_t *CANmodule){
      * Take special care with this functionality. */
     if(/*messageIsOnCanBuffer && */CANmodule->bufferInhibitFlag){
         /* clear TXREQ */
-        CANmodule->bufferInhibitFlag = CO_false;
+        CANmodule->bufferInhibitFlag = false;
         tpdoDeleted = 1U;
     }
     /* delete also pending synchronous TPDOs in TX buffers */
@@ -389,7 +400,7 @@ void CO_CANclearPendingSyncPDOs(CO_CANmodule_t *CANmodule){
         for(i = CANmodule->txSize; i > 0U; i--){
             if(buffer->bufferFull){
                 if(buffer->syncFlag){
-                    buffer->bufferFull = CO_false;
+                    buffer->bufferFull = false;
                     CANmodule->CANtxCount--;
                     tpdoDeleted = 2U;
                 }
@@ -463,9 +474,9 @@ void CO_CANinterrupt(CO_CANmodule_t *CANmodule){
         /* Clear interrupt flag */
 
         /* First CAN message (bootup) was sent successfully */
-        CANmodule->firstCANtxMessage = CO_false;
+        CANmodule->firstCANtxMessage = false;
         /* clear flag from previous message */
-        CANmodule->bufferInhibitFlag = CO_false;
+        CANmodule->bufferInhibitFlag = false;
         /* Are there any new messages waiting to be send */
         if(CANmodule->CANtxCount > 0U){
             uint16_t i;             /* index of transmitting message */
@@ -476,7 +487,7 @@ void CO_CANinterrupt(CO_CANmodule_t *CANmodule){
             for(i = CANmodule->txSize; i > 0U; i--){
                 /* if message buffer is full, send it. */
                 if(buffer->bufferFull){
-                    buffer->bufferFull = CO_false;
+                    buffer->bufferFull = false;
                     CANmodule->CANtxCount--;
 
                     /* Copy message to CAN buffer */
@@ -539,9 +550,9 @@ void CO_CANinterrupt_Rx(CO_CANmodule_t *CANmodule)
 	  msgBuff++;
 	}
 	//Call specific function, which will process the message
-	if (msgMatched && msgBuff->pFunct)
+	if (msgMatched && msgBuff->CANrx_callback)
 		//msgBuff->pFunct(msgBuff->object, &CAN1_RxMsg);
-		msgBuff->pFunct(msgBuff->object, hcan.pRxMsg);
+		msgBuff->CANrx_callback(msgBuff->object, hcan.pRxMsg);
 }
 
 /******************************************************************************/
