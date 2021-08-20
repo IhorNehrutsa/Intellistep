@@ -226,10 +226,11 @@ void CO_CANmodule_disable(CO_CANmodule_t *CANmodule)
 
 
 /******************************************************************************/
+/*
 uint16_t CO_CANrxMsg_readIdent(const CO_CANrxMsg_t *rxMsg){
     return (uint16_t) rxMsg->ident;
 }
-
+*/
 
 /******************************************************************************/
 /*

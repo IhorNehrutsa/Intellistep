@@ -181,21 +181,23 @@ extern "C" {
     typedef unsigned char           domain_t;   /**< domain_t */
 /** @} */
 
+#if 0
 /* Access to received CAN message */
-//#define CO_CANrxMsg_readIdent(msg) ((uint16_t)0)
-//#define CO_CANrxMsg_readDLC(msg)   ((uint8_t)0)
-//#define CO_CANrxMsg_readData(msg)  ((uint8_t *)NULL)
-
+#define CO_CANrxMsg_readIdent(msg) ((uint16_t)0)
+#define CO_CANrxMsg_readDLC(msg)   ((uint8_t)0)
+#define CO_CANrxMsg_readData(msg)  ((uint8_t *)NULL)
+#else
 /* Access to received CAN message */
-//#define CO_CANrxMsg_readIdent(msg) ((((uint16_t)(((CO_CANrxMsg_t *)(msg))->ident))>>2)&0x7FF)
+#define CO_CANrxMsg_readIdent(msg) ((((uint16_t)(((CO_CANrxMsg_t *)(msg))->ident))>>2)&0x7FF)
 #define CO_CANrxMsg_readDLC(msg)   ((uint8_t)(((CO_CANrxMsg_t *)(msg))->DLC))
 #define CO_CANrxMsg_readData(msg)  ((uint8_t *)(((CO_CANrxMsg_t *)(msg))->data))
+#endif
 
 /**
  * Return values of some CANopen functions. If function was executed
  * successfully it returns 0 otherwise it returns <0.
  */
-#if 1
+#if 0
 typedef enum{
     CO_ERROR_NO = 0,                /**< Operation completed successfully */
     CO_ERROR_ILLEGAL_ARGUMENT = -1, /**< Error in function arguments */
@@ -232,6 +234,7 @@ typedef enum{
  * CAN receive message structure as aligned in CAN module. It is different in
  * different microcontrollers. It usually contains other variables.
  */
+#if 1
 typedef struct{
     uint32_t    ident;          /* Standard Identifier */
     uint32_t    ExtId;          /* Specifies the extended identifier */
@@ -244,7 +247,7 @@ typedef struct{
     uint32_t    FIFONumber;  	/*!< Specifies the receive FIFO number.
                                    stored in the mailbox passes through */
 } CO_CANrxMsg_t;
-
+#endif
 
 /* Received message object */
 typedef struct{
