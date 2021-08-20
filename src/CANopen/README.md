@@ -1,6 +1,7 @@
 # BTT S42B v2 Intellistep CANopen source code directory
 
 CANopen directory structure:
+```
 .
 |-- README.md
 |-- OD
@@ -9,6 +10,7 @@ CANopen directory structure:
 `-- STM32
     |-- CO_driver.c
     `-- CO_driver.h
+```
 
 The OD directory contains CANopen Object Dictionary definition for CANopenNode V4.
 BTT-Intellistep-CANopen.eds is source file for all other files.
@@ -18,6 +20,8 @@ The STM32 directory contains [STM32, STM32CubeMX, CanOpenNode library driver](ht
 
 CANopenNode homepage is https://github.com/CANopenNode/CANopenNode
 Source code directory structure:
+```
 .
 |-- Intellistep
 `-- CANopenNode
+```
