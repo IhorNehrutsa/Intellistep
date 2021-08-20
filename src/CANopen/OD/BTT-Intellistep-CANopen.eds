@@ -18,13 +18,13 @@ VendorNumber=0x00000331
 ProductName=BTT-Intellistep-CANopen
 ProductNumber=0x00008200
 RevisionNumber=256
-BaudRate_10=0
+BaudRate_10=1
 BaudRate_20=1
 BaudRate_50=1
 BaudRate_125=1
 BaudRate_250=1
 BaudRate_500=1
-BaudRate_800=0
+BaudRate_800=1
 BaudRate_1000=1
 SimpleBootUpMaster=0
 SimpleBootUpSlave=1
@@ -34,7 +34,7 @@ CompactPDO=0
 GroupMessaging=0
 NrOfRXPDO=1
 NrOfTXPDO=1
-LSS_Supported=0
+LSS_Supported=1
 
 [DummyUsage]
 Dummy0001=0
@@ -47,7 +47,7 @@ Dummy0007=1
 
 [Comments]
 Lines=4
-Line1=Example for DS402 Drives and Motion Control
+Line1=Example for Intellistep Drives and Motion Control
 Line2=1 axis
 Line3=several profile modes
 Line4=all mandatory objects

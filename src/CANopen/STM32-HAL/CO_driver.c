@@ -28,6 +28,7 @@
  */
 
 #include "stm32f1xx_hal.h"
+#include "CO_driver_target.h"
 #include "301/CO_driver.h"
 #include "301/CO_Emergency.h"
 #include "OD.h"
@@ -220,7 +221,7 @@ CO_ReturnError_t CO_CANmodule_init(CO_CANmodule_t *CANmodule,
 /******************************************************************************/
 void CO_CANmodule_disable(CO_CANmodule_t *CANmodule)
 {
-	HAL_CAN_DeInit(&hcan);
+	HAL_CAN_DeInit(CANmodule->CANptr);
 }
 
 

@@ -41,7 +41,7 @@ extern "C" {
 #include <stdbool.h>        /* for 'true', 'false' */
 #include "stm32f1xx_hal.h"
 
-#include "301/CO_driver.h"
+//#include "301/CO_driver.h"
 
 #define OD_CANNodeID 0x0
 
@@ -183,9 +183,13 @@ extern "C" {
 
 /* Access to received CAN message */
 //#define CO_CANrxMsg_readIdent(msg) ((uint16_t)0)
-#define CO_CANrxMsg_readDLC(msg)   ((uint8_t)0)
-#define CO_CANrxMsg_readData(msg)  ((uint8_t *)NULL)
+//#define CO_CANrxMsg_readDLC(msg)   ((uint8_t)0)
+//#define CO_CANrxMsg_readData(msg)  ((uint8_t *)NULL)
 
+/* Access to received CAN message */
+//#define CO_CANrxMsg_readIdent(msg) ((((uint16_t)(((CO_CANrxMsg_t *)(msg))->ident))>>2)&0x7FF)
+#define CO_CANrxMsg_readDLC(msg)   ((uint8_t)(((CO_CANrxMsg_t *)(msg))->DLC))
+#define CO_CANrxMsg_readData(msg)  ((uint8_t *)(((CO_CANrxMsg_t *)(msg))->data))
 
 /**
  * Return values of some CANopen functions. If function was executed
@@ -293,6 +297,7 @@ typedef struct{
 
 
 /* Data storage object for one entry */
+#if 0
 typedef struct {
     void *addr;
     size_t len;
@@ -301,7 +306,38 @@ typedef struct {
     /* Additional variables (target specific) */
     void *addrNV;
 } CO_storage_entry_t;
-
+#else
+typedef struct {
+    /** Address of data to store, always required. */
+    void *addr;
+    /** Length of data to store, always required. */
+    size_t len;
+    /** Sub index in OD objects 1010 and 1011, from 2 to 127. Writing
+     * 0x65766173 to 1010,subIndexOD will store data to non-volatile memory.
+     * Writing 0x64616F6C to 1011,subIndexOD will restore default data, always
+     * required. */
+    uint8_t subIndexOD;
+    /** Attribute from @ref CO_storage_attributes_t, always required. */
+    uint8_t attr;
+    /** Pointer to storage module, target system specific usage, required with
+     * @ref CO_storage_eeprom. */
+    void *storageModule;
+    /** CRC checksum of the data stored in eeprom, set on store, required with
+     * @ref CO_storage_eeprom. */
+    uint16_t crc;
+    /** Address of entry signature inside eeprom, set by init, required with
+     * @ref CO_storage_eeprom. */
+    size_t eepromAddrSignature;
+    /** Address of data inside eeprom, set by init, required with
+     * @ref CO_storage_eeprom. */
+    size_t eepromAddr;
+    /** Offset of next byte being updated by automatic storage, required with
+     * @ref CO_storage_eeprom. */
+    size_t offset;
+    /** Additional target specific parameters, optional. */
+    void *additionalParameters;
+} CO_storage_entry_t;
+#endif
 
 /**
  * Endianes.
@@ -317,7 +353,7 @@ typedef struct {
  *
  * @param CANbaseAddress CAN module base address.
  */
-void CO_CANsetConfigurationMode(void *CANptr);
+//void CO_CANsetConfigurationMode(void *CANptr);
 
 
 /**
@@ -325,7 +361,7 @@ void CO_CANsetConfigurationMode(void *CANptr);
  *
  * @param CANbaseAddress CAN module base address.
  */
-void CO_CANsetNormalMode(CO_CANmodule_t *CANmodule);
+//void CO_CANsetNormalMode(CO_CANmodule_t *CANmodule);
 
 
 /**
@@ -355,6 +391,7 @@ CO_ReturnError_t CO_CANmodule_init(
         uint16_t                txSize,
         uint16_t                CANbitRate);
 */
+/*
 CO_ReturnError_t CO_CANmodule_init(CO_CANmodule_t *CANmodule,
                                    void *CANptr,
                                    CO_CANrx_t rxArray[],
@@ -362,14 +399,14 @@ CO_ReturnError_t CO_CANmodule_init(CO_CANmodule_t *CANmodule,
                                    CO_CANtx_t txArray[],
                                    uint16_t txSize,
                                    uint16_t CANbitRate);
-
+*/
 
 /**
  * Switch off CANmodule. Call at program exit.
  *
  * @param CANmodule CAN module object.
  */
-void CO_CANmodule_disable(CO_CANmodule_t *CANmodule);
+//void CO_CANmodule_disable(CO_CANmodule_t *CANmodule);
 
 
 /**
@@ -451,9 +488,8 @@ CO_CANtx_t *CO_CANtxBufferInit(
  * @return #CO_ReturnError_t: CO_ERROR_NO, CO_ERROR_TX_OVERFLOW or
  * CO_ERROR_TX_PDO_WINDOW (Synchronous TPDO is outside window).
  */
-/*
-CO_ReturnError_t CO_CANsend(CO_CANmodule_t *CANmodule, CO_CANtx_t *buffer);
-*/
+//CO_ReturnError_t CO_CANsend(CO_CANmodule_t *CANmodule, CO_CANtx_t *buffer);
+
 
 /**
  * Clear all synchronous TPDOs from CAN module transmit buffers.
