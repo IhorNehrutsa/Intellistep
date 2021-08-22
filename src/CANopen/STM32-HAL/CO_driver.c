@@ -40,7 +40,6 @@ extern void _Error_Handler(char * file, int line);
 static void CO_CANsendToModule(CO_CANmodule_t *CANmodule, CO_CANtx_t *buffer, uint8_t transmit_mailbox);
 
 
-
 /******************************************************************************/
 void CO_CANsetConfigurationMode(void *CANptr)
 {
@@ -57,16 +56,6 @@ void CO_CANsetNormalMode(CO_CANmodule_t *CANmodule){
 
 
 /******************************************************************************/
-/*
-CO_ReturnError_t CO_CANmodule_init(
-        CO_CANmodule_t         *CANmodule,
-        uint16_t                CANbaseAddress,
-        CO_CANrx_t              *rxArray,
-        uint16_t                rxSize,
-        CO_CANtx_t              *txArray,
-        uint16_t                txSize,
-        uint16_t                CANbitRate)
-*/
 CO_ReturnError_t CO_CANmodule_init(CO_CANmodule_t *CANmodule,
                                    void *CANptr,
                                    CO_CANrx_t rxArray[],
@@ -145,7 +134,6 @@ CO_ReturnError_t CO_CANmodule_init(CO_CANmodule_t *CANmodule,
 	}
 
 	/* Configure CAN module hardware filters */
-
 	/*********************************/
 	CANmodule->useCANrxFilters = true;
 	/********************************/
@@ -233,16 +221,6 @@ uint16_t CO_CANrxMsg_readIdent(const CO_CANrxMsg_t *rxMsg){
 */
 
 /******************************************************************************/
-/*
-CO_ReturnError_t CO_CANrxBufferInit(
-        CO_CANmodule_t         *CANmodule,
-        uint16_t                index,
-        uint16_t                ident,
-        uint16_t                mask,
-        bool_t                  rtr,
-        void                   *object,
-        void                  (*pFunct)(void *object, void *message))
-*/
 CO_ReturnError_t CO_CANrxBufferInit(CO_CANmodule_t *CANmodule,
                                     uint16_t index,
                                     uint16_t ident,
